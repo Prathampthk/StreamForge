@@ -64,7 +64,7 @@ func NewConsumer(c config.Consumer, sink pipeline.Sink, m *telemetry.ConsumerMet
 			logger.Info("consumer assignment", "service", "consumer", "group", c.Group, "action", action, "topic", topic, "partitions", list)
 		}
 	}
-	client, err := kgo.NewClient(kgo.SeedBrokers(c.Brokers...), kgo.ClientID("streamforge-consumer"), kgo.ConsumerGroup(c.Group), kgo.ConsumeTopics(c.Topic),
+	client, err := NewClient(kgo.SeedBrokers(c.Brokers...), kgo.ClientID("streamforge-consumer"), kgo.ConsumerGroup(c.Group), kgo.ConsumeTopics(c.Topic),
 		kgo.DisableAutoCommit(), kgo.BlockRebalanceOnPoll(), kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
 		kgo.Balancers(kgo.CooperativeStickyBalancer()), kgo.RebalanceTimeout(c.RebalanceTimeout), kgo.SessionTimeout(6*time.Second), kgo.HeartbeatInterval(2*time.Second),
 		kgo.FetchMaxWait(c.FlushInterval), kgo.FetchMaxBytes(2<<20), kgo.FetchMaxPartitionBytes(1<<20), kgo.MaxConcurrentFetches(1),

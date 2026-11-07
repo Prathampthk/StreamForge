@@ -29,7 +29,7 @@ type Producer struct {
 }
 
 func New(c config.Config, m *telemetry.Metrics, tracer trace.Tracer) (*Producer, error) {
-	client, err := kgo.NewClient(
+	client, err := NewClient(
 		kgo.SeedBrokers(c.Brokers...), kgo.ClientID("streamforge-ingest"),
 		kgo.RequiredAcks(kgo.AllISRAcks()),                   // Idempotence remains enabled; incompatible settings fail construction.
 		kgo.RecordPartitioner(kgo.StickyKeyPartitioner(nil)), // Kafka-compatible murmur2 for nonempty keys.

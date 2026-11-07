@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"streamforge/internal/broker"
 	"streamforge/internal/metadata"
 	"time"
 )
@@ -17,7 +18,7 @@ type Quarantine struct {
 }
 
 func NewQuarantine(brokers []string, store *metadata.Store) (*Quarantine, error) {
-	client, err := kgo.NewClient(kgo.SeedBrokers(brokers...), kgo.RequiredAcks(kgo.AllISRAcks()), kgo.MaxBufferedRecords(12), kgo.MaxBufferedBytes(24<<20), kgo.ProducerBatchMaxBytes(2<<20), kgo.RecordDeliveryTimeout(3*time.Second), kgo.RecordRetries(3), kgo.DialTimeout(time.Second), kgo.RetryTimeout(3*time.Second))
+	client, err := broker.NewClient(kgo.SeedBrokers(brokers...), kgo.RequiredAcks(kgo.AllISRAcks()), kgo.MaxBufferedRecords(12), kgo.MaxBufferedBytes(24<<20), kgo.ProducerBatchMaxBytes(2<<20), kgo.RecordDeliveryTimeout(3*time.Second), kgo.RecordRetries(3), kgo.DialTimeout(time.Second), kgo.RetryTimeout(3*time.Second))
 	if err != nil {
 		return nil, fmt.Errorf("DLQ producer: %w", err)
 	}

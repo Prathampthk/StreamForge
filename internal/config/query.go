@@ -1,18 +1,22 @@
 package config
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
+	"streamforge/internal/platform"
+	"strings"
 	"time"
 
 	"streamforge/internal/domain"
 )
 
 type Query struct {
+	ClickHouseTLS                                                                            *tls.Config
 	Address, APIKey, Tenant, ClickHouseURL, ClickHouseUser, ClickHousePassword, OTLPEndpoint string
 	MaxConnections, MaxRequests                                                              int
 	DBTimeout, RequestTimeout, ShutdownTimeout, MaxWindow, MaxSnapshotAge                    time.Duration
@@ -49,6 +53,17 @@ func QueryFromEnv(get func(string) string) (Query, error) {
 	if err != nil || !(c.TraceSample >= 0 && c.TraceSample <= 1) {
 		return c, errors.New("TRACE_SAMPLE_RATIO must be 0..1")
 	}
+	if ca := get("CLICKHOUSE_CA_PEM"); ca != "" {
+		if !strings.HasPrefix(c.ClickHouseURL, "https://") {
+			return c, errors.New("ClickHouse CA requires HTTPS")
+		}
+		var tlsErr error
+		c.ClickHouseTLS, tlsErr = platform.TLSConfig(ca)
+		if tlsErr != nil {
+			return c, tlsErr
+		}
+	}
+
 	if parseErr != nil {
 		return c, parseErr
 	}

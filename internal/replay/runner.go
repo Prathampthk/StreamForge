@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"streamforge/internal/broker"
 	"streamforge/internal/domain"
 	"streamforge/internal/metadata"
 	"time"
@@ -78,7 +79,7 @@ func (r Runner) Run(ctx context.Context, o Options) (result Result, runErr error
 			runErr = errors.Join(runErr, errors.New("finish replay audit failed"))
 		}
 	}()
-	client, err := kgo.NewClient(kgo.SeedBrokers(r.Brokers...), kgo.ConsumePartitions(map[string]map[int32]kgo.Offset{o.SourceTopic: {o.Partition: kgo.NewOffset().At(o.From)}}), kgo.FetchIsolationLevel(kgo.ReadCommitted()), kgo.FetchMaxBytes(2<<20), kgo.FetchMaxPartitionBytes(2<<20), kgo.FetchMaxWait(100*time.Millisecond), kgo.RequiredAcks(kgo.AllISRAcks()), kgo.MaxBufferedRecords(1), kgo.MaxBufferedBytes(2<<20), kgo.RecordDeliveryTimeout(3*time.Second), kgo.RecordRetries(3))
+	client, err := broker.NewClient(kgo.SeedBrokers(r.Brokers...), kgo.ConsumePartitions(map[string]map[int32]kgo.Offset{o.SourceTopic: {o.Partition: kgo.NewOffset().At(o.From)}}), kgo.FetchIsolationLevel(kgo.ReadCommitted()), kgo.FetchMaxBytes(2<<20), kgo.FetchMaxPartitionBytes(2<<20), kgo.FetchMaxWait(100*time.Millisecond), kgo.RequiredAcks(kgo.AllISRAcks()), kgo.MaxBufferedRecords(1), kgo.MaxBufferedBytes(2<<20), kgo.RecordDeliveryTimeout(3*time.Second), kgo.RecordRetries(3))
 	if err != nil {
 		return result, err
 	}

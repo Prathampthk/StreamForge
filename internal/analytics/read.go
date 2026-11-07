@@ -51,7 +51,7 @@ type ReadRepository struct {
 }
 
 func NewReadRepository(c config.Query, m *telemetry.QueryMetrics, t trace.Tracer) *ReadRepository {
-	transport := &http.Transport{DialContext: (&net.Dialer{Timeout: time.Second, KeepAlive: 30 * time.Second}).DialContext, MaxConnsPerHost: c.MaxRequests, MaxIdleConnsPerHost: c.MaxRequests, MaxIdleConns: c.MaxRequests, IdleConnTimeout: 30 * time.Second, ResponseHeaderTimeout: c.DBTimeout}
+	transport := &http.Transport{TLSClientConfig: c.ClickHouseTLS, DialContext: (&net.Dialer{Timeout: time.Second, KeepAlive: 30 * time.Second}).DialContext, MaxConnsPerHost: c.MaxRequests, MaxIdleConnsPerHost: c.MaxRequests, MaxIdleConns: c.MaxRequests, IdleConnTimeout: 30 * time.Second, ResponseHeaderTimeout: c.DBTimeout}
 	return &ReadRepository{endpoint: strings.TrimRight(c.ClickHouseURL, "/"), user: c.ClickHouseUser, password: c.ClickHousePassword, transport: transport, client: &http.Client{Transport: transport, Timeout: c.DBTimeout}, tracer: t, metrics: m}
 }
 func (r *ReadRepository) Close() { r.transport.CloseIdleConnections() }

@@ -5,3 +5,9 @@
 load/results
 
 **/*_test.go
+.aws-artifacts/
+.secrets/
+**/.terraform/
+**/*.tfstate*
+**/*.tfplan
+**/*.tfvars

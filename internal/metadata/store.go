@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"os"
+	"streamforge/internal/platform"
 	"time"
 )
 
@@ -15,6 +16,18 @@ func Open(ctx context.Context, dsn string) (*Store, error) {
 	c, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, errors.New("invalid metadata connection configuration")
+	}
+	if ca := os.Getenv("POSTGRES_CA_PEM"); ca != "" {
+		if c.ConnConfig.TLSConfig == nil || c.ConnConfig.TLSConfig.InsecureSkipVerify || len(c.ConnConfig.Fallbacks) > 0 {
+			return nil, errors.New("PostgreSQL custom CA requires sslmode=verify-full")
+		}
+		secure, err := platform.TLSConfig(ca)
+		if err != nil {
+			return nil, err
+		}
+		c.ConnConfig.TLSConfig = c.ConnConfig.TLSConfig.Clone()
+		c.ConnConfig.TLSConfig.RootCAs = secure.RootCAs
+		c.ConnConfig.TLSConfig.MinVersion = secure.MinVersion
 	}
 	c.MaxConns = 4
 	c.MinConns = 0

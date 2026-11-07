@@ -1,17 +1,20 @@
 package config
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
+	"streamforge/internal/platform"
 	"strings"
 	"time"
 )
 
 type Consumer struct {
+	ClickHouseTLS      *tls.Config
 	Brokers            []string
 	Group              string
 	Topic              string
@@ -72,6 +75,17 @@ func ConsumerFromEnv(get func(string) string) (Consumer, error) {
 			return c, errors.New("invalid OTLP endpoint")
 		}
 	}
+	if ca := get("CLICKHOUSE_CA_PEM"); ca != "" {
+		if !strings.HasPrefix(c.ClickHouseURL, "https://") {
+			return c, errors.New("ClickHouse CA requires HTTPS")
+		}
+		var tlsErr error
+		c.ClickHouseTLS, tlsErr = platform.TLSConfig(ca)
+		if tlsErr != nil {
+			return c, tlsErr
+		}
+	}
+
 	if parseErr != nil {
 		return c, parseErr
 	}

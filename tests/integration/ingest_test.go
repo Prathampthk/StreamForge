@@ -63,9 +63,7 @@ func TestKafkaAcknowledgedHTTP(t *testing.T) {
 	defer producer.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	if err := producer.Ready(ctx); err != nil {
-		t.Fatal(err)
-	}
+	eventually(t, 5*time.Second, "new topic leaders become ready", func() bool { return producer.Ready(ctx) == nil })
 	app := ingest.New(c, producer, metrics, telemetry.Tracer(provider), slog.New(slog.NewTextHandler(io.Discard, nil)))
 	server := httptest.NewServer(app.Handler())
 	defer server.Close()

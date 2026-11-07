@@ -34,7 +34,7 @@ func NewSink(c config.Consumer) *Sink {
 }
 
 func NewSinkWithTracing(c config.Consumer, tracer trace.Tracer) *Sink {
-	transport := &http.Transport{DialContext: (&net.Dialer{Timeout: time.Second, KeepAlive: 30 * time.Second}).DialContext, MaxConnsPerHost: c.Workers, MaxIdleConns: c.Workers, MaxIdleConnsPerHost: c.Workers, IdleConnTimeout: 30 * time.Second, ResponseHeaderTimeout: c.InsertTimeout}
+	transport := &http.Transport{TLSClientConfig: c.ClickHouseTLS, DialContext: (&net.Dialer{Timeout: time.Second, KeepAlive: 30 * time.Second}).DialContext, MaxConnsPerHost: c.Workers, MaxIdleConns: c.Workers, MaxIdleConnsPerHost: c.Workers, IdleConnTimeout: 30 * time.Second, ResponseHeaderTimeout: c.InsertTimeout}
 	return &Sink{endpoint: strings.TrimRight(c.ClickHouseURL, "/"), user: c.ClickHouseUser, password: c.ClickHousePassword, client: &http.Client{Transport: transport, Timeout: c.InsertTimeout}, transport: transport, tracer: tracer}
 }
 func (s *Sink) Insert(ctx context.Context, b pipeline.Batch) (err error) {
