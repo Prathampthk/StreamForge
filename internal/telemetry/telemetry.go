@@ -55,5 +55,5 @@ func NewServiceTracing(ctx context.Context, endpoint string, sample float64, ser
 	}
 	return sdktrace.NewTracerProvider(options...), nil
 }
-func Tracer(provider trace.TracerProvider) trace.Tracer { return provider.Tracer("streamforge/ingest") }
+func Tracer(provider trace.TracerProvider) trace.Tracer { return provider.Tracer("streamforge") }
 func Propagator() propagation.TextMapPropagator         { return propagation.TraceContext{} }

@@ -53,12 +53,23 @@ go-cache:
 	@docker volume create streamforge_go_mod >/dev/null
 	@docker volume create streamforge_go_build >/dev/null
 
-.PHONY: query-up query-down query-smoke reconcile
+.PHONY: query-up query-down
 query-up:
 	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml up -d --build --wait --wait-timeout 240 query-api
 query-down:
 	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml stop query-api
+
+.PHONY: observe-up observe-down
+observe-up:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml -f deploy/compose.observability.yaml up -d --build --wait --wait-timeout 240
+	python3 scripts/observe-health.py
+observe-down:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml -f deploy/compose.observability.yaml stop prometheus grafana otel-collector jaeger
+
+.PHONY: query-smoke reconcile observe-smoke
 query-smoke:
 	python3 scripts/query-smoke.py
 reconcile:
 	python3 scripts/reconcile.py "$(MANIFEST)"
+observe-smoke:
+	python3 scripts/observe-smoke.py "$(MANIFEST)"

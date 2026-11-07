@@ -1,4 +1,4 @@
-# Failure model through Phase 3
+# Failure model through Phase 4
 
 Verified local invariants: HTTP success follows Kafka acknowledgment; consumer commits follow synchronous raw+identity projection persistence; repeating or regrouping sink inserts does not multiply canonical metrics; conflicted IDs are explicitly excluded; failed/poison delivered records are never skipped by source commits. The test matrix and exact results are in phase-3-report.md.
 
@@ -13,3 +13,5 @@ Logical-ID conflicts (including changed tenant/minute/currency) are retained in 
 Each metric snapshot replaces atomically, but revenue and traffic are not one transaction. A failed/slow refresh leaves previous values intact; fresh data remains in identity state. Until a successful refresh, readers may see stale data or a prior conflicting contribution. Inspect last_success_time/exception; do not advertise freshness from schedule alone. Identity states have no TTL, raw evidence expires after 30 days, and full-state refresh cost grows with lifetime unique events. A storage/retention/scale plan is required before external deployment or benchmark claims.
 
 Migrations are initial rerunnable DDL, not upgrade reconciliation. PostgreSQL DDL is transactional; ClickHouse DDL is not, so rerun after partial failure. Concurrent migration runs are unsupported. Never edit an applied migration to change definitions. PostgreSQL down SQL is destructive and not invoked automatically. Legacy synthetic raw rows missing payload_json are not canonical facts; no guessed backfill was performed.
+
+Phase 4 query responses fail closed on missing/failed/disabled/stale refresh metadata, bad rows, saturation and database timeouts. A successful refresh is not proof that Kafka backlog drained. Snapshot_last_success is the earlier metadata observation, not a later speculative version stamp or exact event acknowledgment-to-visibility measurement. Query authentication is one configured key/tenant locally; TLS/multi-tenant control-plane hardening remains Phase 6. Reconciliation trusts caller-recorded accepted receipts and an owned dataset scope, checks all bounded IDs/business values, and exits nonzero for discrepancies; it cannot recover unrecorded/unknown HTTP delivery outcomes.

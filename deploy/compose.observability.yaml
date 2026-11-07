@@ -1,0 +1,54 @@
+services:
+  ingest-api:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  consumer:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  query-api:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command: [--config.file=/etc/prometheus/prometheus.yaml, --storage.tsdb.retention.time=7d]
+    volumes: ["./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro", "prometheus:/prometheus"]
+    ports: ["127.0.0.1:9090:9090"]
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O - http://localhost:9090/-/ready >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  grafana:
+    image: grafana/grafana:12.1.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-streamforge_grafana_local_only}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana:/var/lib/grafana
+    ports: ["127.0.0.1:3000:3000"]
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O - http://localhost:3000/api/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.133.0
+    command: [--config=/etc/otel/config.yaml]
+    volumes: ["./otel/config.yaml:/etc/otel/config.yaml:ro"]
+    ports: ["127.0.0.1:13133:13133"]
+    mem_limit: 192m
+  jaeger:
+    image: jaegertracing/jaeger:2.9.0
+    command: [--config=/etc/jaeger/config.yaml]
+    volumes: ["./otel/jaeger.yaml:/etc/jaeger/config.yaml:ro"]
+    ports: ["127.0.0.1:16686:16686"]
+    mem_limit: 256m
+volumes:
+  prometheus:
+  grafana:

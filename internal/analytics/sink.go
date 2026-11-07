@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"streamforge/internal/config"
 	"streamforge/internal/pipeline"
 )
@@ -20,16 +23,28 @@ import (
 const insertSQL = "INSERT INTO events_raw (event_id, tenant_id, user_id, session_id, event_type, occurred_at, received_at, order_id, amount_cents, currency, status_code, kafka_topic, kafka_partition, kafka_offset, sink_batch_id, schema_version, payload_json) FORMAT JSONEachRow\n"
 
 type Sink struct {
+	tracer                   trace.Tracer
 	endpoint, user, password string
 	client                   *http.Client
 	transport                *http.Transport
 }
 
 func NewSink(c config.Consumer) *Sink {
-	transport := &http.Transport{DialContext: (&net.Dialer{Timeout: time.Second, KeepAlive: 30 * time.Second}).DialContext, MaxConnsPerHost: c.Workers, MaxIdleConns: c.Workers, MaxIdleConnsPerHost: c.Workers, IdleConnTimeout: 30 * time.Second, ResponseHeaderTimeout: c.InsertTimeout}
-	return &Sink{endpoint: strings.TrimRight(c.ClickHouseURL, "/"), user: c.ClickHouseUser, password: c.ClickHousePassword, client: &http.Client{Transport: transport, Timeout: c.InsertTimeout}, transport: transport}
+	return NewSinkWithTracing(c, noop.NewTracerProvider().Tracer("streamforge"))
 }
-func (s *Sink) Insert(ctx context.Context, b pipeline.Batch) error {
+
+func NewSinkWithTracing(c config.Consumer, tracer trace.Tracer) *Sink {
+	transport := &http.Transport{DialContext: (&net.Dialer{Timeout: time.Second, KeepAlive: 30 * time.Second}).DialContext, MaxConnsPerHost: c.Workers, MaxIdleConns: c.Workers, MaxIdleConnsPerHost: c.Workers, IdleConnTimeout: 30 * time.Second, ResponseHeaderTimeout: c.InsertTimeout}
+	return &Sink{endpoint: strings.TrimRight(c.ClickHouseURL, "/"), user: c.ClickHouseUser, password: c.ClickHousePassword, client: &http.Client{Transport: transport, Timeout: c.InsertTimeout}, transport: transport, tracer: tracer}
+}
+func (s *Sink) Insert(ctx context.Context, b pipeline.Batch) (err error) {
+	ctx, span := s.tracer.Start(ctx, "clickhouse.insert", trace.WithSpanKind(trace.SpanKindClient))
+	defer func() {
+		if err != nil {
+			span.SetStatus(codes.Error, "insert unconfirmed")
+		}
+		span.End()
+	}()
 	params := url.Values{"database": {"streamforge"}, "async_insert": {"0"}, "wait_end_of_query": {"1"}, "insert_deduplicate": {"0"}, "materialized_views_ignore_errors": {"0"}, "max_execution_time": {"10"}}
 	// The complete immutable body is resent after ambiguous/partial outcomes.
 	return s.execute(ctx, params, io.MultiReader(strings.NewReader(insertSQL), bytes.NewReader(b.Body)), "")

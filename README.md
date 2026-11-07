@@ -1,10 +1,10 @@
 # StreamForge
 
-Backend-only near-real-time analytics project in Go. **Phase 3: replay-safe partition consumers and canonical analytics** is implemented. Query API, replay and AWS remain approval-gated.
+Backend-only near-real-time analytics project in Go. **Phase 4: canonical query API, observability and reconciliation** is implemented. DLQ/replay, load/fault benchmarking and AWS remain approval-gated.
 
 ## Quick start
 
-Requires Docker/Compose, Python 3.10+ and make. Allow at least 6 GiB Docker memory and 10 GiB disk. Ports 8080, 9092, 5432, 8123 and 9000 must be free. Go commands use Go 1.26.0; Make falls back to its pinned Docker image when host Go is absent.
+Requires Docker/Compose, Python 3.10+ and make. Allow at least 6 GiB Docker memory and 10 GiB disk. Ports 8080, 8082, 9092, 5432, 8123 and 9000 must be free. Go commands use Go 1.26.0; Make falls back to its pinned Docker image when host Go is absent.
 
 ```sh
 python3 -m venv .venv
@@ -15,11 +15,13 @@ make up
 make migrate
 make ingest-up
 make consumer-up
+make query-up
 make test
 make lint
 make test-integration
 make ingest-smoke
 make consumer-smoke
+make query-smoke
 make smoke
 ```
 
@@ -45,11 +47,13 @@ curl http://localhost:8080/metrics
 
 `202` confirms Kafka acknowledgment for every submitted event; Consumers persist to ClickHouse before committing source offsets. `POST /v1/events/batch` accepts a JSON array (default <=100 events, <=1 MiB total, each <=8 KiB). Full validation precedes publishing, but broker publication is non-atomic. Failed/timeout/disconnected requests may have published some or all events. Retry the original IDs; duplicate HTTP submissions currently produce duplicate Kafka records. The consumer deduplicates identical normalized payloads by logical ID. Conflicting payloads quarantine the whole ID and retract any prior metric contribution on refresh; HTTP itself does not reject cross-request conflicts.
 
+Query canonical revenue/traffic at http://localhost:8082 using the separate local QUERY_API_KEY. Requests require tenant_id/from/to/interval=1m and an explicit currency for revenue. Windows are minute-aligned [from,to), at most 24h, with empty minutes zero-filled. Revenue cents are exact integer strings; query responses reject unhealthy/stale refreshes. See [query API/reconciliation](docs/query.md).
+
 See [OpenAPI](api/openapi/streamforge.yaml), [contracts](docs/contracts.md), [configuration](docs/ingestion.md), [architecture](docs/architecture.md), [consumer operations](docs/consumer.md), [failure model](docs/failure-model.md), and [ADRs](docs/adr).
 
 ## Verified behavior and limitations
 
-Phase 1 smoke checks legacy SQL shape. Phase 2 tests check broker-acknowledged ingestion and bounds. Phase 3 tests check canonical identity/conflicts, poison offset gaps, real sink writes with a lost response, SIGKILL recovery before/after insert and commit and during rebalance, sink endpoint outage/recovery, and 1→3 ownership. Live pipeline smoke sends ten acknowledged deliveries for five logical IDs and verifies exact canonical IDs and currency-specific minute metrics. See [Phase 3 report](docs/phase-3-report.md), [Phase 2 report](docs/phase-2-report.md) and [Phase 1 report](docs/phase-1-report.md) for actual commands and limits.
+Phase 1 smoke checks legacy SQL shape. Phase 2 tests check broker-acknowledged ingestion and bounds. Phase 3 tests check canonical identity/conflicts, poison offset gaps, real sink writes with a lost response, SIGKILL recovery before/after insert and commit and during rebalance, sink endpoint outage/recovery, and 1→3 ownership. Live pipeline smoke sends ten acknowledged deliveries for five logical IDs and verifies exact canonical IDs and currency-specific minute metrics. Phase 4 adds real ClickHouse golden/late-event/large-money/tenant tests, stale/failure rejection, bounded concurrency/cardinality tests and an independent accepted-manifest audit. See [Phase 4 report](docs/phase-4-report.md), [Phase 3 report](docs/phase-3-report.md), [Phase 2 report](docs/phase-2-report.md) and [Phase 1 report](docs/phase-1-report.md) for actual commands and limits.
 
 Local Kafka is **RF=1, non-HA**. No broker-failure durability proof or benchmark SLO achievement is claimed. Replay-safe canonical projections have passed the local failure tests; this is not an atomic Kafka/ClickHouse transaction or universal exactly-once guarantee. PostgreSQL is not on the ingestion path. Only a configured single-tenant demo bearer key is supported; raw keys are not stored in PostgreSQL. PII is prohibited in attributes, but syntax validation cannot detect all PII. API transport defaults to loopback plaintext. External TLS and multi-tenant key management are later hardening work.
 
@@ -57,13 +61,13 @@ Local Kafka is **RF=1, non-HA**. No broker-failure durability proof or benchmark
 
 Structured JSON request logs contain correlation/trace IDs, outcome and duration; no payload/key is logged. `/metrics` exports bounded outcome labels, HTTP duration and inflight gauges, and producer promise duration/outcome counts. `streamforge_kafka_events_total{outcome="acknowledged"}` counts resolved Kafka acknowledgments, including late outcomes after a caller timeout; HTTP accepted requests are a separate metric. Consumer metrics report assigned partitions, confirmed next offsets, sampled lag, batch sizes, retry failures and insert durations. Final tables are **revenue_1m_canonical** and **traffic_1m_canonical**. The old append aggregates are diagnostic and may double count. One-second full canonical refreshes replace targets atomically but have growing cost; inspect system.view_refreshes for stale/failed snapshots. Identity-state retention is indefinite, with a lifecycle decision still required.
 
-OTLP tracing is optional; set OTEL_EXPORTER_OTLP_ENDPOINT and TRACE_SAMPLE_RATIO. No collector/dashboard is provisioned yet.
+Run `make observe-up` for optional local Prometheus, provisioned Grafana (http://localhost:3000) and Collector → Jaeger (http://localhost:16686). `make observe-smoke MANIFEST=...` checks scrape targets, the 12-panel dashboard/datasources and actual exported pipeline/query spans. See [observability operations](docs/observability.md). OTLP sampling/export remain configurable. Snapshot age is not event freshness.
 
-`make ps` reports container health. `./scripts/compose.sh logs --tail 100 SERVICE` inspects failures. `make ingest-smoke` uses the default demo key; export INGEST_API_KEY/INGEST_TENANT if customized. `make consumer-smoke` also needs CLICKHOUSE_PASSWORD if customized. `make ingest-down` sends SIGTERM to the API; `make consumer-down` stops consumers; `make down` stops the project, including the API, **without deleting volumes**. API readiness goes false during drain; in-flight requests settle within shutdown bounds. Smoke tests append a few uniquely named synthetic rows per run. Initial migrations create absent objects; future changes need new versioned files. Down SQL is destructive and never run automatically. Never remove volumes merely to fix a migration error.
+`make ps` reports container health. `./scripts/compose.sh logs --tail 100 SERVICE` inspects failures. `make ingest-smoke` uses the default demo key; export INGEST_API_KEY/INGEST_TENANT if customized. `make consumer-smoke` also needs CLICKHOUSE_PASSWORD if customized. `make ingest-down` sends SIGTERM to the API; `make consumer-down` stops consumers; `make query-down` stops queries; `make down` stops the project, including the API, **without deleting volumes**. API readiness goes false during drain; in-flight requests settle within shutdown bounds. Smoke tests append a few uniquely named synthetic rows per run. Initial migrations create absent objects; future changes need new versioned files. Down SQL is destructive and never run automatically. Never remove volumes merely to fix a migration error.
 
 ## Costs, evidence and next steps
 
-Only local CPU/memory/disk costs; no cloud resources. Retained volumes and Go build caches consume disk after shutdown. [SLOs](docs/benchmarking.md) remain targets, with load/fault experiments planned for later phases. Next is the query API, observability and correctness reconciliation, requiring explicit approval. Repository milestones are committed and pushed after relevant validation; credentials, .env, build outputs and large benchmark artifacts remain ignored.
+Only local CPU/memory/disk costs; no cloud resources. Retained volumes and Go build caches consume disk after shutdown. [SLOs](docs/benchmarking.md) remain targets, with load/fault experiments planned for later phases. Next is DLQ/replay and fault/performance evaluation, requiring explicit approval. `make reconcile MANIFEST=...` audits a bounded, actually accepted dataset and exits nonzero on discrepancies. No throughput or SLO achievement is claimed. Repository milestones are committed and pushed after relevant validation; credentials, .env, build outputs and large benchmark artifacts remain ignored.
 
 ## Interview defense
 

@@ -63,7 +63,7 @@ func run(logger *slog.Logger) error {
 			logger.Error("consumer tracing shutdown", "error", err)
 		}
 	}()
-	sink := analytics.NewSink(c)
+	sink := analytics.NewSinkWithTracing(c, telemetry.Tracer(tracing))
 	defer sink.Close()
 	metrics := telemetry.NewConsumerMetrics()
 	var hook pipeline.Hook
