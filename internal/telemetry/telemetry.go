@@ -41,7 +41,11 @@ func (m *Metrics) Handler() http.Handler {
 }
 
 func NewTracing(ctx context.Context, endpoint string, sample float64) (*sdktrace.TracerProvider, error) {
-	options := []sdktrace.TracerProviderOption{sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(sample))), sdktrace.WithResource(resource.NewSchemaless(attribute.String("service.name", "streamforge-ingest")))}
+	return NewServiceTracing(ctx, endpoint, sample, "streamforge-ingest")
+}
+
+func NewServiceTracing(ctx context.Context, endpoint string, sample float64, service string) (*sdktrace.TracerProvider, error) {
+	options := []sdktrace.TracerProviderOption{sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(sample))), sdktrace.WithResource(resource.NewSchemaless(attribute.String("service.name", service)))}
 	if endpoint != "" {
 		exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithEndpointURL(endpoint))
 		if err != nil {

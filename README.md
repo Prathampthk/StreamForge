@@ -1,6 +1,6 @@
 # StreamForge
 
-Backend-only near-real-time analytics project in Go. **Phase 2: broker-acknowledged ingestion** is implemented. Consumers, query API, replay and AWS are still approval-gated.
+Backend-only near-real-time analytics project in Go. **Phase 3: replay-safe partition consumers and canonical analytics** is implemented. Query API, replay and AWS remain approval-gated.
 
 ## Quick start
 
@@ -14,10 +14,12 @@ cp .env.example .env  # first checkout only; keep your existing .env
 make up
 make migrate
 make ingest-up
+make consumer-up
 make test
 make lint
 make test-integration
 make ingest-smoke
+make consumer-smoke
 make smoke
 ```
 
@@ -41,26 +43,28 @@ curl http://localhost:8080/readyz
 curl http://localhost:8080/metrics
 ```
 
-`202` confirms Kafka acknowledgment for every submitted event; ClickHouse processing is not implemented. `POST /v1/events/batch` accepts a JSON array (default <=100 events, <=1 MiB total, each <=8 KiB). Full validation precedes publishing, but broker publication is non-atomic. Failed/timeout/disconnected requests may have published some or all events. Retry the original IDs; duplicate HTTP submissions currently produce duplicate Kafka records. **Logical-ID conflict rejection and duplicate-free analytics are not implemented.** Do not claim them until the Phase 3 gate is resolved.
+`202` confirms Kafka acknowledgment for every submitted event; Consumers persist to ClickHouse before committing source offsets. `POST /v1/events/batch` accepts a JSON array (default <=100 events, <=1 MiB total, each <=8 KiB). Full validation precedes publishing, but broker publication is non-atomic. Failed/timeout/disconnected requests may have published some or all events. Retry the original IDs; duplicate HTTP submissions currently produce duplicate Kafka records. The consumer deduplicates identical normalized payloads by logical ID. Conflicting payloads quarantine the whole ID and retract any prior metric contribution on refresh; HTTP itself does not reject cross-request conflicts.
 
-See [OpenAPI](api/openapi/streamforge.yaml), [contracts](docs/contracts.md), [configuration](docs/ingestion.md), [architecture](docs/architecture.md), [failure model](docs/failure-model.md), and [ADRs](docs/adr).
+See [OpenAPI](api/openapi/streamforge.yaml), [contracts](docs/contracts.md), [configuration](docs/ingestion.md), [architecture](docs/architecture.md), [consumer operations](docs/consumer.md), [failure model](docs/failure-model.md), and [ADRs](docs/adr).
 
 ## Verified behavior and limitations
 
-Phase 1 smoke verifies six unique synthetic raw rows, currency-separated revenue, UTC minute buckets, API RPM and error rates. Phase 2 tests verify strict validation, tenant isolation, bounds, acknowledgment-before-success, producer buffer saturation, absent-broker 503, W3C propagation, actual Kafka key/headers/payload and SIGTERM during an unacknowledged request. See [Phase 1 report](docs/phase-1-report.md) and [Phase 2 report](docs/phase-2-report.md) for actual commands and limitations.
+Phase 1 smoke checks legacy SQL shape. Phase 2 tests check broker-acknowledged ingestion and bounds. Phase 3 tests check canonical identity/conflicts, poison offset gaps, real sink writes with a lost response, SIGKILL recovery before/after insert and commit and during rebalance, sink endpoint outage/recovery, and 1→3 ownership. Live pipeline smoke sends ten acknowledged deliveries for five logical IDs and verifies exact canonical IDs and currency-specific minute metrics. See [Phase 3 report](docs/phase-3-report.md), [Phase 2 report](docs/phase-2-report.md) and [Phase 1 report](docs/phase-1-report.md) for actual commands and limits.
 
-Local Kafka is **RF=1, non-HA**. No broker-failure durability proof, logical-event deduplication guarantee, consumer processing, or benchmark SLO achievement is claimed. PostgreSQL is not on the ingestion path. Only a configured single-tenant demo bearer key is supported; raw keys are not stored in PostgreSQL. PII is prohibited in attributes, but syntax validation cannot detect all PII. API transport defaults to loopback plaintext. External TLS and multi-tenant key management are later hardening work.
+Local Kafka is **RF=1, non-HA**. No broker-failure durability proof or benchmark SLO achievement is claimed. Replay-safe canonical projections have passed the local failure tests; this is not an atomic Kafka/ClickHouse transaction or universal exactly-once guarantee. PostgreSQL is not on the ingestion path. Only a configured single-tenant demo bearer key is supported; raw keys are not stored in PostgreSQL. PII is prohibited in attributes, but syntax validation cannot detect all PII. API transport defaults to loopback plaintext. External TLS and multi-tenant key management are later hardening work.
 
 ## Observability and operations
 
-Structured JSON request logs contain correlation/trace IDs, outcome and duration; no payload/key is logged. `/metrics` exports bounded outcome labels, HTTP duration and inflight gauges, and producer promise duration/outcome counts. `streamforge_kafka_events_total{outcome="acknowledged"}` counts resolved Kafka acknowledgments, including late outcomes after a caller timeout; HTTP accepted requests are a separate metric. OTLP tracing is optional; set OTEL_EXPORTER_OTLP_ENDPOINT and TRACE_SAMPLE_RATIO. No collector/dashboard is provisioned yet.
+Structured JSON request logs contain correlation/trace IDs, outcome and duration; no payload/key is logged. `/metrics` exports bounded outcome labels, HTTP duration and inflight gauges, and producer promise duration/outcome counts. `streamforge_kafka_events_total{outcome="acknowledged"}` counts resolved Kafka acknowledgments, including late outcomes after a caller timeout; HTTP accepted requests are a separate metric. Consumer metrics report assigned partitions, confirmed next offsets, sampled lag, batch sizes, retry failures and insert durations. Final tables are **revenue_1m_canonical** and **traffic_1m_canonical**. The old append aggregates are diagnostic and may double count. One-second full canonical refreshes replace targets atomically but have growing cost; inspect system.view_refreshes for stale/failed snapshots. Identity-state retention is indefinite, with a lifecycle decision still required.
 
-`make ps` reports container health. `./scripts/compose.sh logs --tail 100 SERVICE` inspects failures. `make ingest-smoke` uses the default demo key; export INGEST_API_KEY/INGEST_TENANT if customized. `make ingest-down` sends SIGTERM to the API; `make down` stops the project, including the API, **without deleting volumes**. API readiness goes false during drain; in-flight requests settle within shutdown bounds. Smoke tests append a few uniquely named synthetic rows per run. Initial migrations create absent objects; future changes need new versioned files. Down SQL is destructive and never run automatically. Never remove volumes merely to fix a migration error.
+OTLP tracing is optional; set OTEL_EXPORTER_OTLP_ENDPOINT and TRACE_SAMPLE_RATIO. No collector/dashboard is provisioned yet.
+
+`make ps` reports container health. `./scripts/compose.sh logs --tail 100 SERVICE` inspects failures. `make ingest-smoke` uses the default demo key; export INGEST_API_KEY/INGEST_TENANT if customized. `make consumer-smoke` also needs CLICKHOUSE_PASSWORD if customized. `make ingest-down` sends SIGTERM to the API; `make consumer-down` stops consumers; `make down` stops the project, including the API, **without deleting volumes**. API readiness goes false during drain; in-flight requests settle within shutdown bounds. Smoke tests append a few uniquely named synthetic rows per run. Initial migrations create absent objects; future changes need new versioned files. Down SQL is destructive and never run automatically. Never remove volumes merely to fix a migration error.
 
 ## Costs, evidence and next steps
 
-Only local CPU/memory/disk costs; no cloud resources. Retained volumes and Go build caches consume disk after shutdown. [SLOs](docs/benchmarking.md) remain targets, with load/fault experiments planned for later phases. Next is partition-aware consumption and sink correctness, requiring explicit approval. Repository milestones are committed and pushed after relevant validation; credentials, .env, build outputs and large benchmark artifacts remain ignored.
+Only local CPU/memory/disk costs; no cloud resources. Retained volumes and Go build caches consume disk after shutdown. [SLOs](docs/benchmarking.md) remain targets, with load/fault experiments planned for later phases. Next is the query API, observability and correctness reconciliation, requiring explicit approval. Repository milestones are committed and pushed after relevant validation; credentials, .env, build outputs and large benchmark artifacts remain ignored.
 
 ## Interview defense
 
-Explain why broker acknowledgment precedes HTTP success, why timeout is an unknown outcome, why producer retry idempotence differs from logical-event deduplication, why currency must be a revenue grouping key, and why raw-row replacement cannot undo incremental aggregate double counting. The unresolved hard boundary is correctness across Kafka and ClickHouse after ambiguous sink writes.
+Explain why broker acknowledgment precedes HTTP success, why timeout is an unknown outcome, why producer retry idempotence differs from logical-event deduplication, why currency must be a revenue grouping key, and why raw-row replacement cannot undo incremental aggregate double counting. The implemented replay strategy uses exact min/max payload states and rebuildable canonical metrics. Explain its conflict-withdrawal policy, temporary snapshot inconsistency and growing refresh/storage cost; these tradeoffs still need measured tuning.

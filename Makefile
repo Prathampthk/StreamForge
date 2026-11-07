@@ -25,15 +25,30 @@ build:
 test-go-docker:
 	./scripts/go.sh sh -c 'go vet ./... && go test -race ./...'
 
-test-integration:
-	GO_DOCKER_NETWORK=streamforge_default KAFKA_BROKERS=kafka:19092 ./scripts/go.sh go test -race -v -tags=integration -count=1 ./tests/integration
+test-integration: go-cache
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml run --rm --no-deps integration-tests
 
 ingest-up:
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml up -d --build --wait --wait-timeout 240
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml up -d --build --wait --wait-timeout 240 ingest-api
 
 ingest-down:
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml stop ingest-api
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml stop ingest-api
 
 .PHONY: ingest-smoke
 ingest-smoke:
 	python3 scripts/ingest-smoke.py
+
+.PHONY: consumer-up consumer-down
+consumer-up:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml up -d --build --wait --wait-timeout 240 consumer
+consumer-down:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml stop consumer
+
+.PHONY: consumer-smoke
+consumer-smoke:
+	python3 scripts/consumer-smoke.py
+
+.PHONY: go-cache
+go-cache:
+	@docker volume create streamforge_go_mod >/dev/null
+	@docker volume create streamforge_go_build >/dev/null

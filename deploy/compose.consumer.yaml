@@ -1,0 +1,46 @@
+services:
+  consumer:
+    build:
+      context: ..
+      dockerfile: deploy/docker/consumer.Dockerfile
+    environment:
+      KAFKA_BROKERS: kafka:19092
+      CONSUMER_GROUP: ${CONSUMER_GROUP:-streamforge-sink-v1}
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: streamforge
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD}
+      CONSUMER_HTTP_ADDR: 0.0.0.0:8081
+      TRACE_SAMPLE_RATIO: ${TRACE_SAMPLE_RATIO:-0.1}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    depends_on:
+      kafka: {condition: service_healthy}
+      clickhouse: {condition: service_healthy}
+    restart: on-failure
+    mem_limit: 512m
+    stop_grace_period: 20s
+    healthcheck:
+      test: [CMD, /consumer, healthcheck]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  integration-tests:
+    profiles: [test]
+    image: golang:1.26.0
+    working_dir: /src
+    environment:
+      KAFKA_BROKERS: kafka:19092
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: streamforge
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD}
+    volumes:
+      - ..:/src
+      - go_mod:/go/pkg/mod
+      - go_build:/root/.cache/go-build
+    command: [go, test, -race, -v, -tags=integration, -count=1, -timeout=180s, ./tests/integration]
+volumes:
+  go_mod:
+    name: streamforge_go_mod
+    external: true
+  go_build:
+    name: streamforge_go_build
+    external: true
