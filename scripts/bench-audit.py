@@ -49,7 +49,7 @@ def metrics():
 # data and must be reported, never labeled loss or removed to improve results.
 metrics_error=None
 try:
- revenue,traffic=metrics();until=time.monotonic()+args.drain_timeout
+ revenue,traffic=metrics();until=global_deadline
  while (revenue!=dict(expected_revenue) or traffic!=dict(expected_traffic)) and time.monotonic()<until:
   time.sleep(1);revenue,traffic=metrics()
 except Exception as error:
