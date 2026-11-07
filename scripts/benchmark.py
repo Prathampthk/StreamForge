@@ -11,7 +11,10 @@ import re
 import shutil
 import subprocess
 import uuid
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--rate',type=int,default=10500);p.add_argument('--duration',default='15m');p.add_argument('--name',default='steady-15m');a=p.parse_args()
+import time
+from urllib.request import urlopen
+from urllib.error import HTTPError
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--rate',type=int,default=10500);p.add_argument('--duration',default='15m');p.add_argument('--name',default='steady-15m');p.add_argument('--allow-unready-query',action='store_true',help='measure degraded analytics explicitly; retain all query/probe failures');a=p.parse_args()
 if not a.name.replace('-','').replace('_','').isalnum():p.error('safe result name required')
 match=re.fullmatch(r'(\d+)([sm])',a.duration)
 if not match:p.error('duration must use integer seconds or minutes')
@@ -20,12 +23,29 @@ if not 1<=seconds<=1800 or not 1<=a.rate<=100000 or seconds*a.rate>11000000:p.er
 tenant='bench_'+uuid.uuid4().hex[:12]
 env=os.environ|{'BENCH_TENANT':tenant,'LOCAL_UID':str(os.getuid()),'LOCAL_GID':str(os.getgid())}
 compose=['docker','compose','--env-file','.env','-f','deploy/compose.yaml','-f','deploy/compose.bench.yaml']
-subprocess.run(compose+['up','-d','--build','--wait','--wait-timeout','180','bench-ingest','bench-query'],env=env,check=True)
+startup=['up','-d','--build']
+if not a.allow_unready_query:startup+=['--wait','--wait-timeout','180']
+subprocess.run(compose+startup+['bench-ingest','bench-query'],env=env,check=True)
+startup_deadline=time.monotonic()+60
+while True:
+ try:
+  with urlopen('http://127.0.0.1:8083/readyz',timeout=2) as response:assert response.status==200
+  break
+ except Exception:
+  if time.monotonic()>=startup_deadline:raise RuntimeError('ingestion never became ready')
+  time.sleep(1)
+try:
+ with urlopen('http://127.0.0.1:8084/readyz',timeout=3) as response:query_baseline_status=response.status
+except HTTPError as error:query_baseline_status=error.code
+except Exception:query_baseline_status=0
 directory=Path('load/results/raw')/a.name
 if directory.exists():p.error('result directory already exists; choose a new name')
 directory.mkdir(parents=True)
 spec=dict(recorded_at=datetime.now(timezone.utc).isoformat(),platform=platform.platform(),tenant=tenant,offered_rate=a.rate,duration=a.duration,query_concurrency=2,query_windows=['15m','24h'],history_seed_events=1440,all_components_share_host=True,consumer_replicas=1,consumer_batch_records=1000,consumer_workers=4,kafka_partitions=12,kafka_replication_factor=1,compression='lz4',acks='all',producer_idempotence=True,trace_root_sample_ratio_for_benchmark_endpoints=0)
 for key,command in {'host_cpu':['sysctl','-n','machdep.cpu.brand_string'],'host_cores':['sysctl','-n','hw.ncpu'],'host_memory_bytes':['sysctl','-n','hw.memsize'],'docker':['docker','info','--format','cpus={{.NCPU}} memory={{.MemTotal}}'],'disk_free':['df','-h','.']}.items():spec[key]=subprocess.check_output(command,text=True).strip()
+spec['allow_unready_query']=a.allow_unready_query
+spec['initial_query_ready_http_status']=query_baseline_status
+spec['initial_refresh_health']=ClickHouse().query("SELECT view,status,last_success_time,substring(exception,1,200) AS exception FROM system.view_refreshes WHERE database='streamforge'",{})
 spec['source_revision']=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
 digest=hashlib.sha256()
 for source in sorted([*Path('cmd').rglob('*.go'),*Path('internal').rglob('*.go')]):
