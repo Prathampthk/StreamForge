@@ -7,9 +7,12 @@ services:
       KAFKA_BROKERS: kafka:19092
       CONSUMER_GROUP: ${CONSUMER_GROUP:-streamforge-sink-v1}
       CLICKHOUSE_URL: http://clickhouse:8123
+      POSTGRES_DSN: postgres://streamforge:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/streamforge?sslmode=disable
       CLICKHOUSE_USER: streamforge
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD}
       CONSUMER_HTTP_ADDR: 0.0.0.0:8081
+      CONSUMER_BATCH_RECORDS: ${CONSUMER_BATCH_RECORDS:-1000}
+      CONSUMER_BATCH_BYTES: ${CONSUMER_BATCH_BYTES:-8388608}
       TRACE_SAMPLE_RATIO: ${TRACE_SAMPLE_RATIO:-0.1}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     depends_on:
@@ -30,6 +33,7 @@ services:
     environment:
       KAFKA_BROKERS: kafka:19092
       CLICKHOUSE_URL: http://clickhouse:8123
+      POSTGRES_DSN: postgres://streamforge:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/streamforge?sslmode=disable
       CLICKHOUSE_USER: streamforge
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD}
     volumes:

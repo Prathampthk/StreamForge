@@ -46,7 +46,7 @@ func sinkConfig(t *testing.T) config.Consumer {
 }
 func queryCH(t *testing.T, c config.Consumer, sql string) string {
 	t.Helper()
-	request, err := http.NewRequest("POST", c.ClickHouseURL+"/?database=streamforge&wait_end_of_query=1", strings.NewReader(sql))
+	request, err := http.NewRequest("POST", c.ClickHouseURL+"/?database=streamforge&wait_end_of_query=1&max_threads=2&max_memory_usage=536870912&max_bytes_before_external_group_by=67108864", strings.NewReader(sql))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,11 +163,14 @@ type instance struct {
 	once     sync.Once
 }
 
-func start(t *testing.T, c config.Consumer, sink pipeline.Sink, hook pipeline.Hook) *instance {
+func start(t *testing.T, c config.Consumer, sink pipeline.Sink, hook pipeline.Hook, quarantine ...broker.Quarantiner) *instance {
 	t.Helper()
 	consumer, err := broker.NewConsumer(c, sink, telemetry.NewConsumerMetrics(), noop.NewTracerProvider().Tracer("test"), slog.New(slog.NewTextHandler(io.Discard, nil)), hook)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(quarantine) > 0 {
+		consumer.SetQuarantiner(quarantine[0])
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	running := &instance{consumer: consumer, cancel: cancel, done: make(chan struct{})}

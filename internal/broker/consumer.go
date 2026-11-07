@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"streamforge/internal/config"
+	"streamforge/internal/domain"
 	"streamforge/internal/pipeline"
 	"streamforge/internal/telemetry"
 
@@ -20,16 +21,21 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+type Quarantiner interface {
+	Handle(context.Context, *kgo.Record) error
+}
+
 type Consumer struct {
-	client    *kgo.Client
-	config    config.Consumer
-	processor pipeline.Processor
-	metrics   *telemetry.ConsumerMetrics
-	tracer    trace.Tracer
-	logger    *slog.Logger
-	hook      pipeline.Hook
-	assigned  atomic.Int64
-	running   atomic.Bool
+	quarantine Quarantiner
+	client     *kgo.Client
+	config     config.Consumer
+	processor  pipeline.Processor
+	metrics    *telemetry.ConsumerMetrics
+	tracer     trace.Tracer
+	logger     *slog.Logger
+	hook       pipeline.Hook
+	assigned   atomic.Int64
+	running    atomic.Bool
 }
 
 func NewConsumer(c config.Consumer, sink pipeline.Sink, m *telemetry.ConsumerMetrics, t trace.Tracer, logger *slog.Logger, hook pipeline.Hook) (*Consumer, error) {
@@ -99,9 +105,10 @@ func (c *Consumer) epoch(ctx context.Context) error {
 	defer cancel()
 	partitions := map[int32][]*kgo.Record{}
 	highwater := map[int32]int64{}
-	count := 0
-	for count < c.config.BatchRecords && collect.Err() == nil {
-		fetches := c.client.PollRecords(collect, c.config.BatchRecords-count)
+	count, bufferedBytes := 0, 0
+	maxPoll := c.config.BatchRecords * c.config.Workers
+	for count < maxPoll && bufferedBytes < c.config.BatchBytes && collect.Err() == nil {
+		fetches := c.client.PollRecords(collect, maxPoll-count)
 		for _, problem := range fetches.Errors() {
 			if errors.Is(problem.Err, context.DeadlineExceeded) || errors.Is(problem.Err, context.Canceled) {
 				continue
@@ -112,6 +119,10 @@ func (c *Consumer) epoch(ctx context.Context) error {
 		fetches.EachRecord(func(record *kgo.Record) {
 			partitions[record.Partition] = append(partitions[record.Partition], record)
 			count++
+			bufferedBytes += len(record.Value) + len(record.Key) + 256
+			for _, header := range record.Headers {
+				bufferedBytes += len(header.Key) + len(header.Value)
+			}
 		})
 	}
 	cancel()
@@ -144,37 +155,8 @@ func (c *Consumer) epoch(ctx context.Context) error {
 				completed <- result{err: work.Err()}
 				return
 			}
-			batchRecords := make([]pipeline.Record, len(records))
-			for i, record := range records {
-				if record.Topic != c.config.Topic {
-					completed <- result{err: errors.New("unexpected Kafka topic")}
-					return
-				}
-				batchRecords[i] = pipeline.Record{Topic: record.Topic, Partition: record.Partition, Offset: record.Offset, Epoch: record.LeaderEpoch, Timestamp: record.Timestamp, Value: record.Value}
-				for _, header := range record.Headers {
-					if header.Key == "traceparent" {
-						batchRecords[i].TraceParent = string(header.Value)
-					}
-				}
-			}
-			batch, err := pipeline.NewBatch(batchRecords, c.config.BatchBytes)
-			if err != nil {
-				completed <- result{err: err}
-				return
-			}
-			traceContext := telemetry.Propagator().Extract(work, propagation.MapCarrier{"traceparent": batchRecords[0].TraceParent})
-			traceContext, span := c.tracer.Start(traceContext, "consumer.partition_insert", trace.WithSpanKind(trace.SpanKindConsumer))
-			defer span.End()
-			start := time.Now()
-			c.metrics.BatchRows.Observe(float64(len(records)))
-			err = c.processor.Process(traceContext, batch)
-			c.metrics.InsertDuration.Observe(time.Since(start).Seconds())
-			if err == nil {
-				c.metrics.Batches.Inc()
-				completed <- result{last: records[len(records)-1]}
-			} else {
-				completed <- result{err: err}
-			}
+			last, err := c.processPartition(work, records)
+			completed <- result{last: last, err: err}
 		}(records)
 	}
 	workers.Wait()
@@ -210,3 +192,76 @@ func (c *Consumer) epoch(ctx context.Context) error {
 	}
 	return first
 }
+
+// SetQuarantiner must be called before Run; tests may omit it to verify fail-closed behavior.
+func (c *Consumer) SetQuarantiner(q Quarantiner) { c.quarantine = q }
+func (c *Consumer) processPartition(ctx context.Context, records []*kgo.Record) (*kgo.Record, error) {
+	var last *kgo.Record
+	var run []*kgo.Record
+	flush := func() error {
+		if len(run) == 0 {
+			return nil
+		}
+		values := make([]pipeline.Record, len(run))
+		for i, r := range run {
+			values[i] = pipeline.Record{Topic: r.Topic, Partition: r.Partition, Offset: r.Offset, Epoch: r.LeaderEpoch, Timestamp: r.Timestamp, Value: r.Value}
+			for _, h := range r.Headers {
+				if h.Key == "traceparent" {
+					values[i].TraceParent = string(h.Value)
+				}
+			}
+		}
+		batch, err := pipeline.NewBatch(values, c.config.BatchBytes)
+		if err != nil {
+			return err
+		}
+		traceContext := telemetry.Propagator().Extract(ctx, propagation.MapCarrier{"traceparent": values[0].TraceParent})
+		traceContext, span := c.tracer.Start(traceContext, "consumer.partition_insert", trace.WithSpanKind(trace.SpanKindConsumer))
+		defer span.End()
+		start := time.Now()
+		c.metrics.BatchRows.Observe(float64(len(run)))
+		err = c.processor.Process(traceContext, batch)
+		c.metrics.InsertDuration.Observe(time.Since(start).Seconds())
+		if err != nil {
+			return err
+		}
+		c.metrics.Batches.Inc()
+		last = run[len(run)-1]
+		run = nil
+		return nil
+	}
+	for _, r := range records {
+		if r.Topic != c.config.Topic {
+			return last, errors.New("unexpected Kafka topic")
+		}
+		if _, err := domain.DecodeStoredEvent(r.Value); err != nil {
+			if err := flush(); err != nil {
+				return last, err
+			}
+			if c.quarantine == nil {
+				return last, fmt.Errorf("poison at %s/%d/%d; no DLQ handler; source uncommitted", r.Topic, r.Partition, r.Offset)
+			}
+			if err := c.quarantine.Handle(ctx, r); err != nil {
+				c.metrics.DLQFailures.Inc()
+				return last, err
+			}
+			c.metrics.DLQPublished.Inc()
+			last = r
+		} else {
+			run = append(run, r)
+			if len(run) >= c.config.BatchRecords {
+				if err := flush(); err != nil {
+					return last, err
+				}
+			}
+		}
+	}
+	if err := flush(); err != nil {
+		return last, err
+	}
+	return last, nil
+}
+
+// Pause/Resume bound controlled backlog experiments without resetting group offsets.
+func (c *Consumer) Pause()  { c.client.PauseFetchTopics(c.config.Topic) }
+func (c *Consumer) Resume() { c.client.ResumeFetchTopics(c.config.Topic) }

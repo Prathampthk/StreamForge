@@ -15,7 +15,9 @@ import (
 	"streamforge/internal/analytics"
 	"streamforge/internal/broker"
 	"streamforge/internal/config"
+	"streamforge/internal/metadata"
 	"streamforge/internal/pipeline"
+	"streamforge/internal/replay"
 	"streamforge/internal/telemetry"
 
 	"golang.org/x/net/netutil"
@@ -82,6 +84,18 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer consumer.Close()
+	store, err := metadata.FromEnv(context.Background())
+	if err != nil {
+		return err
+	}
+	defer store.Close()
+	quarantine, err := replay.NewQuarantine(c.Brokers, store)
+	if err != nil {
+		return err
+	}
+	defer quarantine.Close()
+	consumer.SetQuarantiner(quarantine)
+
 	signals, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 	ctx, cancel := context.WithCancel(signals)
