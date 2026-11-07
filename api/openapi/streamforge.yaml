@@ -1,0 +1,348 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "StreamForge ingestion API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/v1/events": {
+      "post": {
+        "summary": "Durably publish validated event",
+        "description": "Each encoded event <=8192 bytes. All validation precedes publication. Batch publication is non-atomic. Timeout/disconnect is an unknown outcome; retry original IDs. Logical HTTP duplicates are not deduplicated in Phase 2.",
+        "security": [
+          {
+            "bearerKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Correlation-ID",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Optional; invalid/missing values are replaced with a generated UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/event-v1.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Malformed JSON, invalid contract or invalid batch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body/event too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported content type or encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Draining, saturation, timeout or unconfirmed publication; some/all records may exist in Kafka",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Every submitted event received a successful Kafka broker promise. This does not mean processed by ClickHouse.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "accepted",
+                    "correlation_id"
+                  ],
+                  "properties": {
+                    "accepted": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "correlation_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/events/batch": {
+      "post": {
+        "summary": "Durably publish validated batch",
+        "description": "Defaults: batch max 100 events / 1 MiB body. Each encoded event <=8192 bytes. All validation precedes publication. Batch publication is non-atomic. Timeout/disconnect is an unknown outcome; retry original IDs. Logical HTTP duplicates are not deduplicated in Phase 2.",
+        "security": [
+          {
+            "bearerKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Correlation-ID",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Optional; invalid/missing values are replaced with a generated UUID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "$ref": "../../schemas/event-v1.schema.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Malformed JSON, invalid contract or invalid batch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body/event too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported content type or encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Draining, saturation, timeout or unconfirmed publication; some/all records may exist in Kafka",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Every submitted event received a successful Kafka broker promise. This does not mean processed by ClickHouse.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "accepted",
+                    "correlation_id"
+                  ],
+                  "properties": {
+                    "accepted": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "correlation_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/livez": {
+      "get": {
+        "summary": "Process liveness",
+        "responses": {
+          "200": {
+            "description": "Healthy or Prometheus exposition"
+          },
+          "503": {
+            "description": "Readiness dependency unavailable/draining, or scrape saturation"
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "summary": "Not draining; Kafka metadata lists 12 healthy partition leaders",
+        "responses": {
+          "200": {
+            "description": "Healthy or Prometheus exposition"
+          },
+          "503": {
+            "description": "Readiness dependency unavailable/draining, or scrape saturation"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Prometheus metrics; finite labels only",
+        "responses": {
+          "200": {
+            "description": "Healthy or Prometheus exposition"
+          },
+          "503": {
+            "description": "Readiness dependency unavailable/draining, or scrape saturation"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Local API key maps to the configured INGEST_TENANT. Use loopback locally; TLS is required before external exposure."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "correlation_id"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "correlation_id": {
+            "type": "string"
+          },
+          "retry_after_seconds": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
-// Package domain defines the v1 wire contract, without runtime validation.
+// Package domain defines and validates the v1 event contract.
 package domain
 
-// Event preserves the caller's RFC3339 timestamp on the wire. Phase 2 will
-// parse and validate it before publishing; pointers distinguish absent money
+// Event preserves the caller's RFC3339 timestamp on the wire. DecodeEvent
+// parses and validates it before publishing; pointers distinguish absent money
 // and status fields from legitimate zero values.
 type Event struct {
 	SchemaVersion int               `json:"schema_version"`

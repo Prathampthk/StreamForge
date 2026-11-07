@@ -1,0 +1,22 @@
+services:
+  ingest-api:
+    build:
+      context: ..
+      dockerfile: deploy/docker/ingest.Dockerfile
+    ports: ["127.0.0.1:8080:8080"]
+    environment:
+      HTTP_ADDR: 0.0.0.0:8080
+      KAFKA_BROKERS: kafka:19092
+      INGEST_API_KEY: ${INGEST_API_KEY:?set INGEST_API_KEY in .env}
+      INGEST_TENANT: ${INGEST_TENANT:-merchant_demo}
+      TRACE_SAMPLE_RATIO: ${TRACE_SAMPLE_RATIO:-0.1}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    depends_on:
+      kafka: {condition: service_healthy}
+    mem_limit: 256m
+    stop_grace_period: 20s
+    healthcheck:
+      test: [CMD, /ingest-api, healthcheck]
+      interval: 5s
+      timeout: 3s
+      retries: 20

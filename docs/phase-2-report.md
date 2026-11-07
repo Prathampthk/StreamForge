@@ -1,0 +1,70 @@
+# Phase 2 completion report
+
+- Implemented:
+  - Authenticated single-event and bounded-batch net/http ingestion, strict contract and runtime time-window validation, pinned currency snapshot, one-key/one-tenant local authorization, stable errors/correlation IDs and bounded per-instance request rate/admission.
+  - franz-go producer with verified idempotence enabled, all-ISR acknowledgment, Kafka-compatible keyed hashing, LZ4 compression, record/byte limits, safe cancellation behavior and bounded jittered retry configuration. HTTP 202 only follows all successful promises. Producer promises retain ownership after caller timeout; no goroutine per record.
+  - Typed validated config; dependency-aware readiness, process liveness, non-root scratch image, optional ingestion Compose overlay, graceful drain/SIGTERM behavior, structured logs, Prometheus metrics and optional sampled OTLP traces with Kafka traceparent propagation.
+  - OpenAPI, configuration/run instructions, ingestion ADR, unit/race tests, real Kafka integration tests and a running-API smoke script.
+- Commands executed and results:
+  - Phase 1 foundation: `git commit -m 'feat: establish local infrastructure and event contracts'` -> b0890b4. `git push -u origin main` -> created remote main successfully at https://github.com/Prathampthk/StreamForge . The repository had no previous commits. No credentials or .env were added.
+  - Pinned dependencies resolved with Go 1.26.0 Docker image; `go mod tidy` produced go.sum. ISO currency source fetched from SIX and its publication metadata/hash recorded in currency-source.md.
+  - `make fmt`: PASS using golang:1.26.0 fallback (host Go absent).
+  - `PATH="$PWD/.venv/bin:$PATH" make test lint`: PASS, Python schema fixtures (13) plus all Go unit/race checks and go vet. Tests cover clock boundaries, unknown fields, duplicate JSON keys, timestamp offsets, conditional fields/money/currency, auth/tenant checks, body/batch limits, request saturation, rate limit, cancellation/timeout, acknowledgment-before-response, producer settings and actual buffer saturation. Partition test distributes 12,000 users across 12 partitions, and verifies stable/hot-key affinity.
+  - `go test -race ./internal/domain` through scripts/go.sh after final currency-length boundary fix: PASS. This prevents a newline-joined pair of official codes from matching the embedded snapshot search; regression included.
+  - Unit subprocess SIGTERM test: PASS with unavailable Kafka and an admitted publish; HTTP returned 503 and process logged successful drain/exited. No unacknowledged request returned 202.
+  - `make test-integration` (race enabled, real Kafka on Compose network): PASS. TestKafkaAcknowledgedHTTP verified two broker-acknowledged 202 responses, both original payloads, stable partition 3, increasing offsets, tenant:user key, schema/correlation/UTC produced_at/traceparent headers, HTTP+producer spans and per-record acknowledgment metrics. Identical logical IDs deliberately appeared twice, matching this phase's documented semantics. TestUnavailableBrokerDoesNotAcknowledge returned 503 with zero accepted requests. Final package result: `ok streamforge/tests/integration 2.094s`; this is test runtime, not a latency SLO.
+  - `make ingest-up`: PASS, final multi-stage image rebuilt and all services healthy. Runtime is non-root; source secrets are excluded by .dockerignore.
+  - `make ingest-smoke smoke ps`: PASS. Real API health=200, unauthenticated=401, invalid=400, single=202/accepted=1, batch=202/accepted=2; acknowledgment metrics present. SQL smoke retained raw count=6, EUR revenue=250, USD revenue=12999, minute event counts=5/1, RPM=2/0, errors=1/0 and error_rate=0.5/0. Synthetic tenant smoke_98a59066d82647799c5b7a2298f2afb6. Both topics remain 12 partitions/RF1; all four containers healthy.
+  - Shell syntax, Python compile, OpenAPI JSON syntax (valid YAML subset) and git diff whitespace checks: PASS. .env, .venv and build binary are ignored.
+- Failures found and corrected during implementation:
+  - Initial client option assertion compared an internally returned integer type to an int; corrected inspection and verified real buffer rejection separately.
+  - Initial test container connected through host.docker.internal but received Kafka's host-advertised localhost address; moved integration runner to streamforge_default using kafka:19092.
+  - Integration reader initially requested a consumer-group autocommit option with manual partitions and no group; removed that invalid setting. The test reader has no group and performs no offset commits. No consumer runtime was built.
+- Acceptance criteria passed/failed:
+  - PASS: validated events reach Kafka with expected key/headers; non-2xx on publish failure/saturation; no 202 before acknowledgment; graceful SIGTERM behavior; accepted/rejected request metrics and producer acknowledgment latency/outcomes; payload/key/header integration checks; race/static checks.
+  - NOT CLAIMED: broker-failure durability, client/server latency SLOs or throughput benchmarks, duplicate-free logical events/final aggregates, end-to-end ClickHouse ingestion, real OTLP collector delivery. Trace propagation/spans are tested with an in-memory exporter; no collector provisioned. golangci-lint was not installed/run.
+- Design tradeoffs and known limitations:
+  - Kafka remains RF1/non-HA. acks=all is not per-request fsync or proof against host/disk loss.
+  - HTTP duplicate submissions and same-ID/different-payload conflicts are not deduplicated/rejected across requests. The two-record integration result proves this limitation. Phase 3 must resolve ADR 003 before claiming canonical event identity or aggregate correctness.
+  - Batches are fully validated first but publication is non-atomic. Timeout/disconnect/503 can mean some/all records already exist. Clients must retain original IDs on retry. A safe idempotent produce may outlive the HTTP wait; buffers remain bounded and promises settle on result/client close.
+  - Rate limiting is per API instance and per request, not a distributed tenant/event quota. The bearer key maps to one configured tenant. PII prohibition cannot be completely enforced by syntax. HTTP is local plaintext; multi-tenant control-plane auth/TLS is future hardening.
+  - Existing infrastructure volumes are retained; smoke/integration append small synthetic records. All services remain running. `make down` stops them without volume deletion. No AWS or future-phase runtime work was performed.
+- Next phase preview (do NOT implement): partition-aware consumers, contiguous post-insert commits, safe rebalance recovery and a separately approved sink/logical-ID deduplication strategy with crash/ambiguous-write tests. ADR 003 is still proposed and requires resolution before consumer implementation.
+- Approval requested: "Phase 2 is complete. Do you approve proceeding to Phase 3 (partition-aware consumers and ClickHouse sink)?"
+
+## Files changed
+
+- `.dockerignore`
+- `.env.example`
+- `.gitignore`
+- `Makefile`
+- `README.md`
+- `api/openapi/streamforge.yaml`
+- `cmd/ingest-api/main.go`
+- `cmd/ingest-api/main_test.go`
+- `deploy/compose.ingest.yaml`
+- `deploy/docker/ingest.Dockerfile`
+- `docs/adr/001-partition-key.md`
+- `docs/adr/004-ingestion.md`
+- `docs/architecture.md`
+- `docs/contracts.md`
+- `docs/currency-source.md`
+- `docs/failure-model.md`
+- `docs/ingestion.md`
+- `docs/phase-2-report.md`
+- `go.mod`
+- `go.sum`
+- `internal/broker/producer.go`
+- `internal/broker/producer_test.go`
+- `internal/config/config.go`
+- `internal/config/config_test.go`
+- `internal/domain/currencies.txt`
+- `internal/domain/event.go`
+- `internal/domain/validate.go`
+- `internal/domain/validate_test.go`
+- `internal/ingest/http.go`
+- `internal/ingest/http_test.go`
+- `internal/telemetry/telemetry.go`
+- `scripts/go.sh`
+- `scripts/ingest-smoke.py`
+- `tests/integration/ingest_test.go`
