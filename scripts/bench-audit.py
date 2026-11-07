@@ -6,40 +6,64 @@ import hashlib
 import json
 from pathlib import Path
 import time
+import subprocess
 from reconcile import ClickHouse, instant
 
-parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('directory',type=Path);parser.add_argument('--drain-timeout',type=int,default=120);args=parser.parse_args()
+parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('directory',type=Path);parser.add_argument('--drain-timeout',type=int,default=120);parser.add_argument('--chunk-size',type=int,default=1000);parser.add_argument('--pause-refresh',action='store_true',help='post-load ID audit only: pause refreshes and always restart before metrics');args=parser.parse_args()
 if not 0<=args.drain_timeout<=600:parser.error('drain timeout must be <=600')
+if not 1<=args.chunk_size<=2000:parser.error('chunk size must be 1..2000')
 client=ClickHouse();summary=json.loads((args.directory/'summary.json').read_text());tenant=summary['tenant'];expected_revenue=defaultdict(lambda:[0,0]);expected_traffic=defaultdict(lambda:[0,0,0])
-counts=dict(accepted=0,missing=0,payload_mismatch=0,unverified_read_error=0);ids=[];hashes={};examples=[]
+counts=dict(accepted=0,missing=0,payload_mismatch=0,unverified_read_error=0,read_retry_attempts=0);ids=[];hashes={};examples=[]
 global_deadline=time.monotonic()+args.drain_timeout
 def add_example(value):
  if len(examples)<20:examples.append(value)
 def checked_verify(chunk,expected):
- try:verify(chunk,expected)
- except Exception as error:
-  counts['unverified_read_error']+=len(chunk)
-  for value in chunk[:20]:add_example(value)
-  print(json.dumps(dict(audit_read_error=type(error).__name__,unverified_events=len(chunk))),flush=True)
+ for attempt in range(3):
+  try:
+   verify(chunk,expected)
+   return
+  except Exception as error:
+   if attempt<2:
+    counts['read_retry_attempts']+=1;time.sleep(.1*(2**attempt));continue
+   counts['unverified_read_error']+=len(chunk)
+   for value in chunk[:20]:add_example(value)
+   with (args.directory/'failed-audit-chunks.jsonl').open('a') as failures:
+    failures.write(json.dumps(dict(ids=chunk,hashes=expected))+'\n')
+   print(json.dumps(dict(audit_read_error=type(error).__name__,unverified_events=len(chunk),accepted_through=counts['accepted'])),flush=True)
 def verify(chunk,expected):
  params=dict(ids='['+','.join("'"+value+"'" for value in chunk)+']')
- observed={row['event_id']:row['checksum'].lower() for row in client.query('SELECT event_id,hex(SHA256(payload)) AS checksum FROM events_canonical WHERE event_id IN {ids:Array(UUID)} LIMIT 1025',params)}
+ observed={row['event_id']:row['checksum'].lower() for row in client.query('SELECT event_id,hex(SHA256(payload)) AS checksum FROM events_canonical WHERE event_id IN {ids:Array(UUID)} LIMIT '+str(len(chunk)+1),params)}
  deadline=global_deadline
  while len(observed)<len(chunk) and time.monotonic()<deadline:
-  time.sleep(.5);observed={row['event_id']:row['checksum'].lower() for row in client.query('SELECT event_id,hex(SHA256(payload)) AS checksum FROM events_canonical WHERE event_id IN {ids:Array(UUID)} LIMIT 1025',params)}
+  time.sleep(.5);observed={row['event_id']:row['checksum'].lower() for row in client.query('SELECT event_id,hex(SHA256(payload)) AS checksum FROM events_canonical WHERE event_id IN {ids:Array(UUID)} LIMIT '+str(len(chunk)+1),params)}
  for value in chunk:
   if value not in observed:counts['missing']+=1;add_example(value)
   elif observed[value]!=expected[value]:counts['payload_mismatch']+=1;add_example(value)
-with (args.directory/'accepted.jsonl').open() as stream:
- for line in stream:
-  receipt=json.loads(line);event=receipt['event'];value=event['event_id'];counts['accepted']+=1;ids.append(value);hashes[value]=receipt['payload_sha256']
-  minute=instant(event['occurred_at']).replace(second=0,microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ');traffic=expected_traffic[minute];traffic[0]+=1
-  if event['event_type']=='api_request':traffic[1]+=1;traffic[2]+=int(event['status_code']>=500)
-  if event['event_type']=='purchase':revenue=expected_revenue[(minute,event['currency'])];revenue[0]+=1;revenue[1]+=event['amount_cents']
-  if len(ids)==1000:
-   checked_verify(ids,hashes);ids=[];hashes={}
-   if counts['accepted']%100000==0:print(json.dumps(dict(progress=counts)),flush=True)
- if ids:checked_verify(ids,hashes)
+def refresh_action(action):
+ command=['./scripts/compose.sh','exec','-T','clickhouse','sh','-c','exec clickhouse-client --user "$CLICKHOUSE_USER" --password "$CLICKHOUSE_PASSWORD" --database streamforge --multiquery']
+ sql='\n'.join('SYSTEM '+action+' VIEW '+name+';' for name in ['revenue_1m_refresh','traffic_1m_refresh'])
+ subprocess.run(command,input=sql,text=True,check=True,timeout=30)
+try:
+ if args.pause_refresh:
+  refresh_action('STOP')
+  until=time.monotonic()+30
+  while True:
+   health=client.query("SELECT status FROM system.view_refreshes WHERE database='streamforge' AND view IN ('revenue_1m_refresh','traffic_1m_refresh')",{})
+   if len(health)==2 and all(r['status']=='Disabled' for r in health):break
+   if time.monotonic()>=until:raise RuntimeError('refresh pause did not settle')
+   time.sleep(.5)
+ with (args.directory/'accepted.jsonl').open() as stream:
+  for line in stream:
+   receipt=json.loads(line);event=receipt['event'];value=event['event_id'];counts['accepted']+=1;ids.append(value);hashes[value]=receipt['payload_sha256']
+   minute=instant(event['occurred_at']).replace(second=0,microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ');traffic=expected_traffic[minute];traffic[0]+=1
+   if event['event_type']=='api_request':traffic[1]+=1;traffic[2]+=int(event['status_code']>=500)
+   if event['event_type']=='purchase':revenue=expected_revenue[(minute,event['currency'])];revenue[0]+=1;revenue[1]+=event['amount_cents']
+   if len(ids)==args.chunk_size:
+    checked_verify(ids,hashes);ids=[];hashes={}
+    if counts['accepted']%100000==0:print(json.dumps(dict(progress=counts)),flush=True)
+  if ids:checked_verify(ids,hashes)
+finally:
+ if args.pause_refresh:refresh_action('START')
 params=dict(tenant=tenant)
 def metrics():
  revenue={(r['minute'],r['currency']):[int(r['purchases']),int(r['cents'])] for r in client.query("SELECT formatDateTime(snapshot.minute,'%Y-%m-%dT%H:%i:%SZ','UTC') AS minute,currency,sum(purchase_count) AS purchases,toString(sum(revenue_cents)) AS cents FROM revenue_1m_canonical AS snapshot WHERE tenant_id={tenant:String} GROUP BY snapshot.minute,currency",params)}
@@ -55,6 +79,8 @@ try:
 except Exception as error:
  revenue,traffic=None,None;metrics_error=type(error).__name__
 result=dict(counts,canonical_ids_verified=(counts['missing']==0 and counts['payload_mismatch']==0 and counts['unverified_read_error']==0),revenue_exact=(revenue==dict(expected_revenue)),traffic_exact=(traffic==dict(expected_traffic)),unknown_delivery_events=summary['unknown_events_all_stages'],examples=examples[:20],drain_limit_seconds=args.drain_timeout)
+result['chunk_size']=args.chunk_size
+result['identity_audit_refreshes_paused']=args.pause_refresh
 result['metrics_read_error']=metrics_error
 result['ok']=result['canonical_ids_verified'] and result['revenue_exact'] and result['traffic_exact'] and not result['unknown_delivery_events']
 (args.directory/'audit.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result));raise SystemExit(0 if result['ok'] else 1)
