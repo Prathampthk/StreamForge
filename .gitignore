@@ -1,0 +1,6 @@
+.env
+.DS_Store
+*.log
+load/results/raw/
+.venv/
+__pycache__/

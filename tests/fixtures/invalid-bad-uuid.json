@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "event_id": "x",
+  "tenant_id": "demo",
+  "user_id": "u1",
+  "event_type": "purchase",
+  "occurred_at": "2026-11-06T17:22:14.211Z",
+  "order_id": "o1",
+  "amount_cents": 12999,
+  "currency": "USD"
+}

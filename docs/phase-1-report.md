@@ -1,0 +1,56 @@
+# Phase 1 completion report
+
+- Implemented: local non-HA Kafka/KRaft, PostgreSQL, ClickHouse; initial rerunnable DDL; Go event wire type; JSON Schema and valid/invalid fixtures; bootstrap/migration/smoke/test commands; architecture/contracts/SLOs/failure model and three ADRs. Existing directory already contained .git; no reinitialization or commits made.
+- Commands executed and results:
+  - `docker info`: sandbox socket access initially denied; approved execution succeeded, server 29.9.2. Compose v5.6.1.
+  - `make up`: pinned images pulled, all three services healthy.
+  - `make migrate`: five metadata tables, indexes, raw/state tables and materialized views created; both Kafka topics created.
+  - `make migrate smoke ps`: initial DDL rerun passed; six-row synthetic dataset passed; all three services healthy. Topics exactly 12 partitions, RF=1, min ISR=1, seven-day retention, unsafe election disabled.
+  - Smoke verified raw count=6, EUR purchase=1/revenue=250, USD purchase=1/revenue=12999, consecutive UTC minute event counts=5/1, RPM=2/0, API errors=1/0 and error rates=0.5/0. Fixture tenant: smoke_c609b1da031f451280d90af1bae78df8. First smoke attempt failed due to integer-versus-string assertion; fixed and reran successfully. Small uniquely named fixtures remain in local storage.
+  - `python3 -m venv .venv`; pinned dependencies installed. Initial pip networking was blocked in sandbox; approved install succeeded. Timestamp fixture initially exposed missing optional RFC3339 validator; installed and pinned it and added a guard that checks format validation is enabled.
+  - `PATH="$PWD/.venv/bin:$PATH" make test`: PASS, one table-driven unittest covering 13 JSON fixtures.
+  - `docker run --rm -v "$PWD:/src" -w /src golang:1.26.0 sh -c 'go mod tidy && go vet ./... && go test -race ./... && test -z "$(gofmt -l internal/domain/event.go)"'`: PASS. Initial vet required go mod tidy; normalized go.mod and reran. Domain has no Go test files, so the race command establishes compilation only, not runtime race coverage.
+  - `sh -n scripts/compose.sh scripts/migrate.sh`, Python py_compile and `git diff --check`: PASS. No golangci-lint installed/run.
+- Acceptance criteria: PASS local startup, healthy dependencies, migration rerun, manual synthetic raw+aggregate semantics, currency separation, UTC minute grouping, 12 partitions and local credential isolation. A separate fresh-clone machine was not tested; the first startup used newly created volumes.
+- Design tradeoffs and known limitations: local RF=1 is non-HA; no broker-failure durability proof, no performance measurements, no application runtime, no logical-event dedup guarantee. ISO currency membership, 8 KiB transport bounds and clock-relative policies are documented Phase 2 validation requirements; JSON Schema covers shape and formats. Initial idempotent migrations are not a general upgrade engine. Aggregate retention currently indefinite. Optional observability deferred. Containers remain running; `make down` stops them and preserves data. No AWS resources provisioned.
+- Next phase preview (NOT implemented): Go ingestion API with validation, bounded inflight work and broker-acknowledged success.
+- Approval requested: "Phase 1 is complete. Do you approve proceeding to Phase 2 (Go ingestion API)?"
+
+## Files changed
+
+- `.env.example`
+- `.gitignore`
+- `Makefile`
+- `README.md`
+- `deploy/compose.yaml`
+- `docs/adr/001-partition-key.md`
+- `docs/adr/002-aggregation.md`
+- `docs/adr/003-sink-dedup-proposal.md`
+- `docs/architecture.md`
+- `docs/benchmarking.md`
+- `docs/contracts.md`
+- `docs/failure-model.md`
+- `go.mod`
+- `internal/domain/event.go`
+- `migrations/clickhouse/001_events.sql`
+- `migrations/postgres/001_metadata.down.sql`
+- `migrations/postgres/001_metadata.up.sql`
+- `requirements-dev.txt`
+- `schemas/event-v1.schema.json`
+- `scripts/compose.sh`
+- `scripts/migrate.sh`
+- `scripts/smoke.py`
+- `tests/fixtures/invalid-api-status.json`
+- `tests/fixtures/invalid-bad-currency.json`
+- `tests/fixtures/invalid-bad-uuid.json`
+- `tests/fixtures/invalid-invalid-time.json`
+- `tests/fixtures/invalid-missing-price.json`
+- `tests/fixtures/invalid-negative-money.json`
+- `tests/fixtures/invalid-pii-field.json`
+- `tests/fixtures/invalid-unknown-version.json`
+- `tests/fixtures/invalid-unused-field.json`
+- `tests/fixtures/valid-add_to_cart.json`
+- `tests/fixtures/valid-api_request.json`
+- `tests/fixtures/valid-page_view.json`
+- `tests/fixtures/valid-purchase.json`
+- `tests/test_contract.py`

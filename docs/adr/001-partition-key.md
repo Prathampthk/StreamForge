@@ -1,0 +1,3 @@
+# ADR 001: user partition key (accepted for future producer)
+
+Use tenant_id + ':' + user_id and a fixed documented Kafka-compatible hash (proposed Java-compatible murmur2) in Phase 2. Alternative tenant-only keys preserve tenant order but concentrate large tenants. Random keys distribute load but lose user ordering. Ordering is per partition, not global or tenant-wide; concurrent requests can arrive in either order. Hot users still cause hot partitions. Adding partitions changes mapping and can break historical key ordering, requiring a controlled rollout. Retried publishes need client idempotence and ordering settings verified together. Skew/distribution tests belong with the producer; no hash is implemented yet.
