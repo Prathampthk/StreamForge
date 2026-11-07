@@ -30,7 +30,7 @@ else:
     raise AssertionError("Prometheus targets not healthy")
 auth = "admin:" + os.environ.get("GRAFANA_ADMIN_PASSWORD", "streamforge_grafana_local_only")
 dashboard = get("http://localhost:3000/api/dashboards/uid/streamforge-pipeline", auth)
-assert len(dashboard["dashboard"]["panels"]) == 12
+assert len(dashboard["dashboard"]["panels"]) == 16
 sources = get("http://localhost:3000/api/datasources", auth)
 assert {"prometheus", "jaeger"} <= {source["uid"] for source in sources}
 required = {"http.ingest", "kafka.publish", "consumer.partition_insert", "clickhouse.insert", "http.query.revenue", "clickhouse.revenue", "clickhouse.traffic"}
@@ -47,4 +47,4 @@ for _ in range(30):
     time.sleep(1)
 else:
     raise AssertionError("missing exported trace operations: " + str(required - operations))
-print("PASS observability: Prometheus ingest/consumer/query targets up; Grafana 12-panel dashboard and both datasources provisioned; HTTP -> Kafka -> consumer -> ClickHouse and query spans found in Jaeger")
+print("PASS observability: Prometheus ingest/consumer/query targets up; Grafana 16-panel dashboard and both datasources provisioned; HTTP -> Kafka -> consumer -> ClickHouse and query spans found in Jaeger")

@@ -36,7 +36,9 @@ with (args.directory/'accepted.jsonl').open() as stream:
   minute=instant(event['occurred_at']).replace(second=0,microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ');traffic=expected_traffic[minute];traffic[0]+=1
   if event['event_type']=='api_request':traffic[1]+=1;traffic[2]+=int(event['status_code']>=500)
   if event['event_type']=='purchase':revenue=expected_revenue[(minute,event['currency'])];revenue[0]+=1;revenue[1]+=event['amount_cents']
-  if len(ids)==1000:checked_verify(ids,hashes);ids=[];hashes={}
+  if len(ids)==1000:
+   checked_verify(ids,hashes);ids=[];hashes={}
+   if counts['accepted']%100000==0:print(json.dumps(dict(progress=counts)),flush=True)
  if ids:checked_verify(ids,hashes)
 params=dict(tenant=tenant)
 def metrics():

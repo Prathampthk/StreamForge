@@ -115,7 +115,6 @@ func (r *run) publish(ctx context.Context, events []domain.Event, stage string, 
 	request.Header.Set("Authorization", "Bearer "+r.key)
 	start := time.Now()
 	response, err := r.client.Do(request)
-	elapsed := time.Since(start).Seconds()
 	status := 0
 	var decoded struct {
 		Accepted int             `json:"accepted"`
@@ -134,6 +133,7 @@ func (r *run) publish(ctx context.Context, events []domain.Event, stage string, 
 			err = json.Unmarshal(raw, &decoded)
 		}
 	}
+	elapsed := time.Since(start).Seconds()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	outcome := "unknown"
@@ -309,6 +309,7 @@ func execute() error {
 	ingest := flag.String("ingest", "http://bench-ingest:8080", "ingestion origin")
 	queryURL := flag.String("query", "http://bench-query:8082", "query origin")
 	history := flag.Bool("seed-history", true, "seed one event per minute for previous 24h")
+	isolated := flag.Bool("isolated-tenant", false, "caller guarantees a new run-owned tenant with no prior JPY data")
 	flag.Parse()
 	if *rate < 1 || *rate > 100000 || *duration < time.Second || *duration > 30*time.Minute || *batch < 1 || *batch > 100 || *workers < 1 || *workers > 128 || *duration > time.Duration(11000000/int64(*rate))*time.Second || !domain.ValidIdentifier(*tenant) {
 		return errors.New("invalid bounds (max 11M offered events)")
@@ -346,7 +347,17 @@ func execute() error {
 			}
 		}
 	}
-	// Reserve empty JPY minutes so aggregate visibility identifies each probe uniquely.
+	// A wrapper-owned fresh tenant has no prior JPY contributions. This lets
+	// measurement count unhealthy query responses instead of aborting setup.
+	if *isolated {
+		if !strings.HasPrefix(*tenant, "bench_") {
+			return errors.New("isolated mode requires wrapper-owned bench tenant")
+		}
+		for i := 0; i < int(duration.Seconds())+1; i++ {
+			r.probeMinutes = append(r.probeMinutes, now.Add(-6*24*time.Hour+time.Duration(i)*time.Minute))
+		}
+	}
+	// Otherwise reserve actually empty JPY minutes for reusable pilot tenants.
 	for days := 6; days >= 2 && len(r.probeMinutes) < int(duration.Seconds())+1; days-- {
 		base := now.Add(-time.Duration(days) * 24 * time.Hour)
 		raw, err := r.get(setup, "revenue", "JPY", base, base.Add(24*time.Hour))
