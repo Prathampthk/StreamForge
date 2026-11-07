@@ -4,7 +4,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY cmd/ cmd/
 COPY internal/ internal/
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /ingest-api ./cmd/ingest-api
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /ingest-api ./cmd/ingest-api
 
 FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

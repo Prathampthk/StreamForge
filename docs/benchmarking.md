@@ -1,12 +1,17 @@
-# SLO targets; no measured performance yet
+# Reproducing the local measurements
 
-| Target | Measurement |
-|---|---|
-| >=10,000 accepted events/s | Kafka-acknowledged events over continuous 15 minutes |
-| ingest p95 <100ms | client and server arrival-to-broker-ack/response |
-| query p95 <250ms | concurrent writes; record concurrency, windows and dataset size |
-| freshness p95 <5s | sampled acknowledged IDs to aggregate visibility; p50/p95/p99/max |
-| 3 consumers >=2x one | same consumer-bound workload, host and settings |
-| zero lost acknowledged IDs | drain and reconcile unique IDs and per-minute/currency metrics after faults |
+Start/migrate the local stack and optional observability (`make observe-up`, `make migrate`), then `make tools-build`. Build all images before measuring. `make benchmark` runs exactly 900 seconds at 10,500 offered events/s; use a new `--name` for reruns. The wrapper creates a unique tenant, captures host/configuration evidence and polls Docker resource/refresh metadata. It never creates cloud resources. Kafka is single-broker RF=1: successful acks do not prove survival of broker/disk loss.
 
-Phase 5 will record seeds (60% page views, 20% carts, 10% purchases, 10% API requests), error distribution, versions, host resources, accepted/produced/persisted/aggregated/queried counts, raw evidence, graph data and failure logs. No load generator or load test exists in Phase 1. Faults include broker/sink outage, poison input, DLQ unavailable, rebalance, SIGTERM/SIGKILL and ambiguous insert. Local smoke duration is not a throughput benchmark.
+The Go driver uses seed 42 and a deterministic 60/20/10/10 page/cart/purchase/API distribution; 10% of API events are errors. Purchases use separate USD/EUR integer cents. Unique run/event IDs prevent cross-run logical collisions. Batches contain 100 events, 32 workers and a bounded scheduling queue; dropped scheduled work is counted. Kafka uses acks=all, idempotence and lz4; the byte buffer remains bounded. Dedicated benchmark endpoints disable root trace sampling, while metrics and the ordinary observability stack remain enabled. All components and the driver share the same Docker host.
+
+A 1440-event seed spans the prior 24 hours. Two query loops request 15-minute and 24-hour traffic windows (revenue is also queried by the freshness probes) during ingestion. HTTP errors/timeouts are counted separately from successful latency percentiles. This sparse seed is not a claim of 24 hours at full sustained rate. Existing identity history remains present and influences full-refresh costs.
+
+`accepted.jsonl` records every successful event, normalized payload SHA256 and **actual successful broker callback time** returned by ingestion. `attempts.jsonl` also records non-success outcomes. A 503 or disconnect is delivery-unknown, never evidence that nothing was published. Sustained throughput counts only callback timestamps inside the exact 900-second interval; seed/probes and late acknowledgments are separate. Client latency covers the complete successful HTTP request. Server latency derives from successful-request Prometheus histogram deltas: report bucket upper bounds and interpolation as estimates, not exact samples.
+
+One purchase probe per second uses JPY and a previously empty historical minute. Query observation of that unique minute's contribution measures callback acknowledgment-to-aggregate visibility with 100ms polling. Four workers, a four-probe queue and a 30-second deadline are bounded. Errors, dropped probes and censored timeouts remain visible; successful-probe percentiles alone cannot establish an all-accepted-event freshness SLO. Synchronized clocks are required. Snapshot refresh age is a separate operational signal.
+
+After the run, execute `make benchmark-audit`. The streaming audit checks every receipt's canonical event ID and payload SHA256 in chunks of 1000, then compares exact minute/currency revenue, purchases, events, RPM and API errors for the unique tenant. Missing IDs after the drain budget are unverified/missing-at-audit, not proof of permanent loss. Unknown delivery outcomes can introduce extra canonical contributions; they fail exact manifest-only reconciliation and must not be silently deleted. Raw multi-gigabyte journals stay in ignored `load/results/raw/`; commit only small summaries, resource summaries and graphs.
+
+`make scaling-test` explicitly enables the integration-only consumer comparison: same 60,000-event balanced 12-partition backlog and prefilled canonical identities, same single worker/batch/byte limits per instance, two query callers, 1/2/3 replicas, first insert through confirmed source offsets. It measures the isolated consumer stage and includes accepted-ID verification. A failed 2x target remains a failed target. `make fault-test` briefly stops/restores only local ClickHouse and Kafka and records actual outcomes. Do not run either during the steady measurement.
+
+`make k6-smoke` independently checks the k6 driver at low load for five seconds on the normal demo tenant, outside the formal run. The primary Go journal is the reconciliation authority; k6 counters alone are not per-ID correctness evidence. Pin optional graph dependencies with `pip install -r requirements-bench.txt` and run `python3 scripts/bench-graphs.py load/results/raw/steady-15m` after completion.

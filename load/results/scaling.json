@@ -1,0 +1,48 @@
+{
+  "balanced_partitions": 12,
+  "canonical_preseeded_for_both": true,
+  "cases": [
+    {
+      "batch_records": 1000,
+      "persisted_and_committed_events_per_second": 9679.602551724822,
+      "poll_resolution_seconds": 0.05,
+      "query_count": 113,
+      "query_errors": 0,
+      "query_p95_seconds": 0.026298333,
+      "records": 60000,
+      "replicas": 1,
+      "seconds": 6.198601614,
+      "workers_per_instance": 1
+    },
+    {
+      "batch_records": 1000,
+      "persisted_and_committed_events_per_second": 17239.99753940411,
+      "poll_resolution_seconds": 0.05,
+      "query_count": 62,
+      "query_errors": 0,
+      "query_p95_seconds": 0.029342167,
+      "records": 60000,
+      "replicas": 2,
+      "seconds": 3.480278919,
+      "workers_per_instance": 1
+    },
+    {
+      "batch_records": 1000,
+      "persisted_and_committed_events_per_second": 18483.87598110573,
+      "poll_resolution_seconds": 0.05,
+      "query_count": 59,
+      "query_errors": 0,
+      "query_p95_seconds": 0.028292375,
+      "records": 60000,
+      "replicas": 3,
+      "seconds": 3.246072418,
+      "workers_per_instance": 1
+    }
+  ],
+  "executed_at": "2026-11-07T03:08:17.560504801Z",
+  "same_prefilled_records": 60000,
+  "speedup_3_over_1": 1.909569724824297,
+  "target_at_least_2x": false,
+  "tenant": "scaling_b5c9acdd",
+  "topic": "streamforge.test.79e2295d1248460ab7eea1176bb0803b"
+}

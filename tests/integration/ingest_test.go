@@ -46,6 +46,8 @@ func configuration(t *testing.T) config.Config {
 }
 func TestKafkaAcknowledgedHTTP(t *testing.T) {
 	c := configuration(t)
+	_, isolatedTopic := source(t, config.Consumer{Brokers: c.Brokers})
+	c.Topic = isolatedTopic
 	exporter := tracetest.NewInMemoryExporter()
 	provider := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exporter), sdktrace.WithSampler(sdktrace.AlwaysSample()))
 	defer func() {

@@ -199,6 +199,7 @@ func (s *Server) events(w http.ResponseWriter, r *http.Request, batch bool) {
 		}
 		events[i] = event
 	}
+	ctx, ackTimes := telemetry.WithAckTimes(ctx)
 	publishCtx, publishCancel := context.WithTimeout(ctx, s.config.PublishTimeout)
 	defer publishCancel()
 	if err := s.publisher.Publish(publishCtx, events, correlation); err != nil {
@@ -211,7 +212,7 @@ func (s *Server) events(w http.ResponseWriter, r *http.Request, batch bool) {
 		return
 	}
 	outcome = "accepted"
-	respond(w, http.StatusAccepted, map[string]any{"accepted": len(events), "correlation_id": correlation})
+	respond(w, http.StatusAccepted, map[string]any{"accepted": len(events), "correlation_id": correlation, "acknowledgments": ackTimes.Values()})
 }
 
 type errorEnvelope struct {

@@ -166,20 +166,20 @@ func TestQueryGoldenLateEventsAndIsolation(t *testing.T) {
 	if revenue[0].Cents != "0" || revenue[1].Cents != "250" || revenue[2].Cents != "0" {
 		t.Fatal(revenue)
 	}
-	status, body = get("traffic", "", tenant)
-	if status != 200 {
-		t.Fatal(status)
-	}
-	var traffic []struct {
-		analytics.Traffic
-		Rate float64 `json:"error_rate"`
-	}
-	if err := json.Unmarshal(body["data"], &traffic); err != nil {
-		t.Fatal(err)
-	}
-	if len(traffic) != 4 || traffic[0].Events != 4 || traffic[0].RPM != 2 || traffic[0].Errors != 1 || traffic[0].Rate != .5 || traffic[1].Events != 2 || traffic[1].RPM != 1 || traffic[1].Errors != 0 || traffic[2].Events != 0 || traffic[2].Rate != 0 {
-		t.Fatalf("traffic %+v", traffic)
-	}
+	eventually(t, 20*time.Second, "independent traffic snapshot catches up", func() bool {
+		status, body := get("traffic", "", tenant)
+		if status != 200 {
+			return false
+		}
+		var traffic []struct {
+			analytics.Traffic
+			Rate float64 `json:"error_rate"`
+		}
+		if err := json.Unmarshal(body["data"], &traffic); err != nil {
+			t.Fatal(err)
+		}
+		return len(traffic) == 4 && traffic[0].Events == 4 && traffic[0].RPM == 2 && traffic[0].Errors == 1 && traffic[0].Rate == .5 && traffic[1].Events == 2 && traffic[1].RPM == 1 && traffic[1].Errors == 0 && traffic[2].Events == 0 && traffic[2].Rate == 0
+	})
 	if status, _ := get("revenue", "USD", tenant+"_other"); status != 403 {
 		t.Fatal("tenant leak")
 	}
@@ -287,6 +287,10 @@ func TestQueryRejectsStoppedRefreshAndDatabaseOutage(t *testing.T) {
 	}
 	queryCH(t, sinkSettings, "SYSTEM STOP VIEW revenue_1m_refresh")
 	defer queryCH(t, sinkSettings, "SYSTEM START VIEW revenue_1m_refresh")
+	eventually(t, 20*time.Second, "inflight refresh finishes before Disabled metadata", func() bool {
+		refresh, err := repository.Refresh(context.Background(), "revenue")
+		return err == nil && refresh.Status == "Disabled"
+	})
 	if response := run(handler); response.Code != 503 || !strings.Contains(response.Body.String(), "snapshot_unavailable") {
 		t.Fatalf("stopped refresh returned %d %s", response.Code, response.Body.String())
 	}

@@ -16,6 +16,7 @@ import (
 )
 
 type Metrics struct {
+	PublishErrors    *prometheus.CounterVec
 	Registry         *prometheus.Registry
 	Requests         *prometheus.CounterVec
 	HTTPLatency      *prometheus.HistogramVec
@@ -27,13 +28,14 @@ type Metrics struct {
 
 func NewMetrics() *Metrics {
 	m := &Metrics{Registry: prometheus.NewRegistry(),
+		PublishErrors:    prometheus.NewCounterVec(prometheus.CounterOpts{Name: "streamforge_producer_errors_total", Help: "Finite producer failure classes."}, []string{"class"}),
 		Requests:         prometheus.NewCounterVec(prometheus.CounterOpts{Name: "streamforge_ingest_requests_total", Help: "Ingestion requests by finite outcome."}, []string{"outcome"}),
 		HTTPLatency:      prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "streamforge_ingest_request_duration_seconds", Help: "Arrival to final response, including broker wait.", Buckets: []float64{.001, .005, .01, .025, .05, .1, .25, .5, 1, 5, 10}}, []string{"outcome"}),
 		Events:           prometheus.NewCounterVec(prometheus.CounterOpts{Name: "streamforge_kafka_events_total", Help: "Producer records with resolved broker outcome; includes outcomes after HTTP cancellation."}, []string{"outcome"}),
 		PublishLatency:   prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "streamforge_kafka_publish_duration_seconds", Help: "Producer enqueue through resolved promise.", Buckets: []float64{.001, .005, .01, .025, .05, .1, .25, .5, 1, 5, 10}}, []string{"outcome"}),
 		ProducerInflight: prometheus.NewGauge(prometheus.GaugeOpts{Name: "streamforge_producer_inflight_records", Help: "Unsettled producer promises."}),
 		HTTPInflight:     prometheus.NewGauge(prometheus.GaugeOpts{Name: "streamforge_ingest_inflight_requests", Help: "Admitted ingestion requests."})}
-	m.Registry.MustRegister(m.Requests, m.HTTPLatency, m.Events, m.PublishLatency, m.ProducerInflight, m.HTTPInflight)
+	m.Registry.MustRegister(m.PublishErrors, m.Requests, m.HTTPLatency, m.Events, m.PublishLatency, m.ProducerInflight, m.HTTPInflight)
 	return m
 }
 func (m *Metrics) Handler() http.Handler {

@@ -1,0 +1,59 @@
+services:
+  bench-ingest:
+    build:
+      context: ..
+      dockerfile: deploy/docker/ingest.Dockerfile
+    environment:
+      HTTP_ADDR: 0.0.0.0:8080
+      KAFKA_BROKERS: kafka:19092
+      INGEST_API_KEY: streamforge_benchmark_ingest_key_only
+      INGEST_TENANT: ${BENCH_TENANT:-benchmark}
+      TRACE_SAMPLE_RATIO: "0"
+    ports: ["127.0.0.1:8083:8080"]
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD, /ingest-api, healthcheck]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  bench-query:
+    build:
+      context: ..
+      dockerfile: deploy/docker/query.Dockerfile
+    environment:
+      QUERY_HTTP_ADDR: 0.0.0.0:8082
+      QUERY_API_KEY: streamforge_benchmark_query_key_only
+      QUERY_TENANT: ${BENCH_TENANT:-benchmark}
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: streamforge
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD}
+      TRACE_SAMPLE_RATIO: "0"
+    ports: ["127.0.0.1:8084:8082"]
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD, /query-api, healthcheck]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  eventgen:
+    profiles: [tools]
+    build:
+      context: ..
+      dockerfile: deploy/docker/tools.Dockerfile
+    environment:
+      INGEST_API_KEY: streamforge_benchmark_ingest_key_only
+      QUERY_API_KEY: streamforge_benchmark_query_key_only
+    user: "${LOCAL_UID:-501}:${LOCAL_GID:-20}"
+    volumes: ["../load/results/raw:/results"]
+    mem_limit: 512m
+  replayctl:
+    profiles: [tools]
+    build:
+      context: ..
+      dockerfile: deploy/docker/tools.Dockerfile
+    entrypoint: [/replayctl]
+    environment:
+      KAFKA_BROKERS: kafka:19092
+      POSTGRES_DSN: postgres://streamforge:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/streamforge?sslmode=disable
+    volumes: ["..:/work:ro"]
+    mem_limit: 256m

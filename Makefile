@@ -73,3 +73,17 @@ reconcile:
 	python3 scripts/reconcile.py "$(MANIFEST)"
 observe-smoke:
 	python3 scripts/observe-smoke.py "$(MANIFEST)"
+
+.PHONY: tools-build fault-test scaling-test benchmark benchmark-audit k6-smoke
+tools-build:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.bench.yaml --profile tools build eventgen replayctl
+fault-test:
+	python3 scripts/local-faults.py
+scaling-test: go-cache
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml run --rm --no-deps -e STREAMFORGE_RUN_SCALING=1 integration-tests go test -race -tags=integration ./tests/integration -run TestMeasuredConsumerScaling -count=1 -timeout=10m
+benchmark:
+	python3 scripts/benchmark.py --duration 15m --rate 10500 --name steady-15m
+benchmark-audit:
+	python3 scripts/bench-audit.py load/results/raw/steady-15m --drain-timeout 120
+k6-smoke:
+	docker run --rm --network streamforge_default -v "$(CURDIR)/load/k6:/scripts:ro" -e DURATION=5s -e EVENTS_PER_SECOND=1000 -e TENANT=merchant_demo -e INGEST_URL=http://ingest-api:8080 -e INGEST_API_KEY=streamforge_demo_key_local_only_change_me grafana/k6:1.2.3 run /scripts/mixed.js

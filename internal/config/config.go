@@ -66,7 +66,7 @@ func FromEnv(get func(string) string) (Config, error) {
 	c.MaxRequests = integer("MAX_INFLIGHT_REQUESTS", 64)
 	c.MaxBatchEvents = integer("MAX_BATCH_EVENTS", 100)
 	c.MaxBodyBytes = integer("MAX_BODY_BYTES", 1<<20)
-	c.ProducerRecords = integer("PRODUCER_MAX_RECORDS", 1000)
+	c.ProducerRecords = integer("PRODUCER_MAX_RECORDS", 10000)
 	c.ProducerBytes = integer("PRODUCER_MAX_BYTES", 8<<20)
 	c.RequestsPerSecond = number("REQUESTS_PER_SECOND", "2000")
 	c.Burst = integer("REQUEST_BURST", 2000)

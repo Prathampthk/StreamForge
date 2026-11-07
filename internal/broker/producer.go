@@ -77,13 +77,24 @@ func (p *Producer) Publish(ctx context.Context, events []domain.Event, correlati
 		span.End()
 		return nil
 	}
-	for _, record := range records {
+	for index, record := range records {
+		logicalID := events[index].EventID
 		started := time.Now()
 		p.metrics.ProducerInflight.Inc()
 		p.client.TryProduce(ctx, record, func(_ *kgo.Record, err error) {
 			outcome := "acknowledged"
+			if err == nil {
+				telemetry.ObserveAck(ctx, logicalID)
+			}
 			if err != nil {
 				outcome = "failed"
+				class := "broker_error"
+				if errors.Is(err, kgo.ErrMaxBuffered) {
+					class = "buffer_full"
+				} else if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+					class = "timeout_or_cancel"
+				}
+				p.metrics.PublishErrors.WithLabelValues(class).Inc()
 				span.SetStatus(codes.Error, "publish failed")
 			}
 			p.metrics.Events.WithLabelValues(outcome).Inc()

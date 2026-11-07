@@ -120,7 +120,8 @@
                   "type": "object",
                   "required": [
                     "accepted",
-                    "correlation_id"
+                    "correlation_id",
+                    "acknowledgments"
                   ],
                   "properties": {
                     "accepted": {
@@ -129,6 +130,27 @@
                     },
                     "correlation_id": {
                       "type": "string"
+                    },
+                    "acknowledgments": {
+                      "type": "array",
+                      "description": "One entry per successfully published event. Timestamp is the ingest process clock at the successful Kafka callback; synchronized clocks are required for cross-process freshness measurement. Entries need not preserve request order.",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "event_id",
+                          "acknowledged_at"
+                        ],
+                        "properties": {
+                          "event_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "acknowledged_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -253,7 +275,8 @@
                   "type": "object",
                   "required": [
                     "accepted",
-                    "correlation_id"
+                    "correlation_id",
+                    "acknowledgments"
                   ],
                   "properties": {
                     "accepted": {
@@ -262,6 +285,27 @@
                     },
                     "correlation_id": {
                       "type": "string"
+                    },
+                    "acknowledgments": {
+                      "type": "array",
+                      "description": "One entry per successfully published event. Timestamp is the ingest process clock at the successful Kafka callback; synchronized clocks are required for cross-process freshness measurement. Entries need not preserve request order.",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "event_id",
+                          "acknowledged_at"
+                        ],
+                        "properties": {
+                          "event_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "acknowledged_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
                     }
                   }
                 }

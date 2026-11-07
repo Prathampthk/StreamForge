@@ -1,0 +1,18 @@
+{
+  "executed_at": "2026-11-07T02:54:45.948366+00:00",
+  "results": [
+    {
+      "fault": "clickhouse_unavailable",
+      "http_202": 5,
+      "source": "Kafka backlog",
+      "accepted_ids_reconciled": 5
+    },
+    {
+      "fault": "kafka_unavailable",
+      "http_status": 503,
+      "code": "publish_unconfirmed",
+      "delivery": "unknown, not claimed absent",
+      "accepted_ids_reconciled": 5
+    }
+  ]
+}

@@ -50,8 +50,8 @@ services:
       CLICKHOUSE_DB: streamforge
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
     ports: ["127.0.0.1:8123:8123", "127.0.0.1:9000:9000"]
-    volumes: [clickhouse:/var/lib/clickhouse]
-    mem_limit: 2g
+    volumes: ["clickhouse:/var/lib/clickhouse", "./clickhouse/resources.xml:/etc/clickhouse-server/config.d/resources.xml:ro"]
+    mem_limit: 4g
     ulimits:
       nofile: {soft: 262144, hard: 262144}
     healthcheck:
