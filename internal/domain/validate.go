@@ -185,3 +185,22 @@ func (e Event) Validate(now time.Time, p Policy) error {
 	}
 	return nil
 }
+
+// DecodeStoredEvent validates Kafka payload shape and invariants without
+// reapplying ingress wall-clock age limits to retained backlog or retries.
+func DecodeStoredEvent(raw []byte) (Event, error) {
+	if len(raw) > MaxEventBytes {
+		return Event{}, errors.New("stored event exceeds 8192 bytes")
+	}
+	var timestampOnly struct {
+		OccurredAt string `json:"occurred_at"`
+	}
+	if err := json.Unmarshal(raw, &timestampOnly); err != nil {
+		return Event{}, errors.New("malformed stored event")
+	}
+	instant, err := time.Parse(time.RFC3339Nano, timestampOnly.OccurredAt)
+	if err != nil {
+		return Event{}, errors.New("invalid stored event timestamp")
+	}
+	return DecodeEvent(raw, instant, Policy{})
+}
