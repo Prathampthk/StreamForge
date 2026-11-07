@@ -1,0 +1,24 @@
+services:
+  query-api:
+    build:
+      context: ..
+      dockerfile: deploy/docker/query.Dockerfile
+    environment:
+      QUERY_HTTP_ADDR: 0.0.0.0:8082
+      QUERY_API_KEY: ${QUERY_API_KEY:-streamforge_query_demo_key_local_only}
+      QUERY_TENANT: ${QUERY_TENANT:-merchant_demo}
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: streamforge
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD}
+      TRACE_SAMPLE_RATIO: ${TRACE_SAMPLE_RATIO:-0.1}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    ports: ["127.0.0.1:8082:8082"]
+    depends_on:
+      clickhouse: {condition: service_healthy}
+    mem_limit: 256m
+    stop_grace_period: 15s
+    healthcheck:
+      test: [CMD, /query-api, healthcheck]
+      interval: 5s
+      timeout: 5s
+      retries: 20

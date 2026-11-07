@@ -26,13 +26,13 @@ test-go-docker:
 	./scripts/go.sh sh -c 'go vet ./... && go test -race ./...'
 
 test-integration: go-cache
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml run --rm --no-deps integration-tests
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml run --rm --no-deps integration-tests
 
 ingest-up:
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml up -d --build --wait --wait-timeout 240 ingest-api
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml up -d --build --wait --wait-timeout 240 ingest-api
 
 ingest-down:
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml stop ingest-api
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml stop ingest-api
 
 .PHONY: ingest-smoke
 ingest-smoke:
@@ -40,9 +40,9 @@ ingest-smoke:
 
 .PHONY: consumer-up consumer-down
 consumer-up:
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml up -d --build --wait --wait-timeout 240 consumer
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml up -d --build --wait --wait-timeout 240 consumer
 consumer-down:
-	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml stop consumer
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml stop consumer
 
 .PHONY: consumer-smoke
 consumer-smoke:
@@ -52,3 +52,13 @@ consumer-smoke:
 go-cache:
 	@docker volume create streamforge_go_mod >/dev/null
 	@docker volume create streamforge_go_build >/dev/null
+
+.PHONY: query-up query-down query-smoke reconcile
+query-up:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml up -d --build --wait --wait-timeout 240 query-api
+query-down:
+	docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.ingest.yaml -f deploy/compose.consumer.yaml -f deploy/compose.query.yaml stop query-api
+query-smoke:
+	python3 scripts/query-smoke.py
+reconcile:
+	python3 scripts/reconcile.py "$(MANIFEST)"

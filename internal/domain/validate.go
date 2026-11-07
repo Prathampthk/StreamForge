@@ -140,8 +140,8 @@ func (e Event) Validate(now time.Time, p Policy) error {
 	if e.SessionID != nil && !ValidIdentifier(*e.SessionID) {
 		return errors.New("invalid session_id")
 	}
-	occurred, err := time.Parse(time.RFC3339Nano, e.OccurredAt)
-	if err != nil || !timestamp.MatchString(e.OccurredAt) {
+	occurred, err := ParseTimestamp(e.OccurredAt)
+	if err != nil {
 		return errors.New("occurred_at must be RFC3339 with at most nanosecond precision")
 	}
 	if occurred.After(now.Add(p.FutureSkew)) || occurred.Before(now.Add(-p.MaxLateness)) {
@@ -152,7 +152,7 @@ func (e Event) Validate(now time.Time, p Policy) error {
 		if e.OrderID == nil || !ValidIdentifier(*e.OrderID) || e.AmountCents == nil || *e.AmountCents < 0 || e.Currency == nil {
 			return errors.New("purchase requires order_id, nonnegative amount_cents and currency")
 		}
-		if len(*e.Currency) != 3 || !strings.Contains("\n"+currencySnapshot, "\n"+*e.Currency+"\n") {
+		if !ValidCurrency(*e.Currency) {
 			return errors.New("currency is not in the pinned ISO 4217 snapshot")
 		}
 		if e.StatusCode != nil {
@@ -203,4 +203,20 @@ func DecodeStoredEvent(raw []byte) (Event, error) {
 		return Event{}, errors.New("invalid stored event timestamp")
 	}
 	return DecodeEvent(raw, instant, Policy{})
+}
+
+// ValidCurrency checks the pinned ISO snapshot, excluding test/no-currency codes.
+func ValidCurrency(value string) bool {
+	return len(value) == 3 && strings.Contains("\n"+currencySnapshot, "\n"+value+"\n")
+}
+
+func ParseTimestamp(value string) (time.Time, error) {
+	if !timestamp.MatchString(value) {
+		return time.Time{}, errors.New("timestamp must be RFC3339 with at most nanosecond precision")
+	}
+	instant, err := time.Parse(time.RFC3339Nano, value)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("timestamp: %w", err)
+	}
+	return instant, nil
 }

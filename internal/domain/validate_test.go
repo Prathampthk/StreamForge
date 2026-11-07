@@ -19,6 +19,9 @@ func TestContractFixtures(t *testing.T) {
 		t.Fatal("fixtures missing")
 	}
 	for _, file := range files {
+		if !strings.HasPrefix(filepath.Base(file), "valid-") && !strings.HasPrefix(filepath.Base(file), "invalid-") {
+			continue
+		}
 		t.Run(filepath.Base(file), func(t *testing.T) {
 			raw, err := os.ReadFile(file)
 			if err != nil {

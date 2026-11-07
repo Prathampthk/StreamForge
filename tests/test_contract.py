@@ -10,6 +10,8 @@ class ContractTests(unittest.TestCase):
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(schema, format_checker=FormatChecker())
         for path in (ROOT / 'tests/fixtures').glob('*.json'):
+            if not path.name.startswith(('valid-', 'invalid-')):
+                continue
             with self.subTest(fixture=path.name):
                 errors = list(validator.iter_errors(json.loads(path.read_text())))
                 self.assertEqual(bool(errors), path.name.startswith('invalid-'))

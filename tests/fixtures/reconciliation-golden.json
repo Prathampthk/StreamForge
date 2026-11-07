@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "scope": {
+    "tenants": [
+      "golden"
+    ],
+    "from": "2026-11-06T17:22:00Z",
+    "to": "2026-11-06T17:24:00Z"
+  },
+  "accepted": [
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "golden",
+        "user_id": "u1",
+        "event_type": "purchase",
+        "occurred_at": "2026-11-06T17:22:59.999999999Z",
+        "order_id": "o1",
+        "amount_cents": 137,
+        "currency": "USD"
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "golden",
+        "user_id": "u1",
+        "event_type": "purchase",
+        "occurred_at": "2026-11-06T11:22:59.999999999-06:00",
+        "order_id": "o1",
+        "amount_cents": 137,
+        "currency": "USD",
+        "session_id": null,
+        "attributes": {}
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000002",
+        "tenant_id": "golden",
+        "user_id": "u2",
+        "event_type": "purchase",
+        "occurred_at": "2026-11-06T17:23:00Z",
+        "order_id": "o2",
+        "amount_cents": 250,
+        "currency": "EUR"
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000003",
+        "tenant_id": "golden",
+        "user_id": "u3",
+        "event_type": "page_view",
+        "occurred_at": "2026-11-06T17:22:00Z"
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000004",
+        "tenant_id": "golden",
+        "user_id": "u4",
+        "event_type": "api_request",
+        "occurred_at": "2026-11-06T17:22:15Z",
+        "status_code": 200
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000005",
+        "tenant_id": "golden",
+        "user_id": "u5",
+        "event_type": "api_request",
+        "occurred_at": "2026-11-06T17:22:25Z",
+        "status_code": 503
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000006",
+        "tenant_id": "golden",
+        "user_id": "u6",
+        "event_type": "purchase",
+        "occurred_at": "2026-11-06T17:22:30Z",
+        "order_id": "o6",
+        "amount_cents": 999,
+        "currency": "USD"
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000006",
+        "tenant_id": "golden",
+        "user_id": "u6",
+        "event_type": "purchase",
+        "occurred_at": "2026-11-06T17:23:00Z",
+        "order_id": "o6",
+        "amount_cents": 1000,
+        "currency": "USD"
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    },
+    {
+      "event": {
+        "schema_version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000007",
+        "tenant_id": "golden",
+        "user_id": "u7",
+        "event_type": "api_request",
+        "occurred_at": "2026-11-06T17:23:59.999999999Z",
+        "status_code": 404
+      },
+      "acknowledged_at": "2026-11-06T17:24:00Z"
+    }
+  ]
+}
