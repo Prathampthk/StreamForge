@@ -1,0 +1,79 @@
+{
+  "recorded_at": "2026-11-07T03:44:06.308754+00:00",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "tenant": "bench_a619b1648c0c",
+  "offered_rate": 10500,
+  "duration": "15m",
+  "query_concurrency": 2,
+  "query_windows": [
+    "15m",
+    "24h"
+  ],
+  "history_seed_events": 1440,
+  "all_components_share_host": true,
+  "consumer_replicas": 1,
+  "consumer_batch_records": 1000,
+  "consumer_workers": 4,
+  "kafka_partitions": 12,
+  "kafka_replication_factor": 1,
+  "compression": "lz4",
+  "acks": "all",
+  "producer_idempotence": true,
+  "trace_root_sample_ratio_for_benchmark_endpoints": 0,
+  "host_cpu": "Apple M4",
+  "host_cores": "10",
+  "host_memory_bytes": "17179869184",
+  "docker": "cpus=10 memory=8319438848",
+  "disk_free": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   288Gi   146Gi    67%    1.6M  1.5G    0%   /System/Volumes/Data",
+  "allow_unready_query": true,
+  "initial_query_ready_http_status": 503,
+  "initial_refresh_health": [
+    {
+      "view": "revenue_1m_refresh",
+      "status": "Running",
+      "last_success_time": "2026-11-07 03:13:37",
+      "exception": "Code: 241. DB::Exception: Query memory limit exceeded: would use 256.52 MiB (attempt to allocate chunk of 4.08 MiB bytes), maximum: 256.00 MiB: While executing AggregatingTransform. (MEMORY_LIMIT_EXCE"
+    },
+    {
+      "view": "traffic_1m_refresh",
+      "status": "Running",
+      "last_success_time": "2026-11-07 03:14:15",
+      "exception": "Code: 241. DB::Exception: Query memory limit exceeded: would use 259.37 MiB (attempt to allocate chunk of 4.54 MiB bytes), maximum: 256.00 MiB: While executing AggregatingTransform. (MEMORY_LIMIT_EXCE"
+    }
+  ],
+  "source_revision": "1ebc0dfe7abec1dcea81d683ab97d7879b97e5e3",
+  "go_source_sha256": "468e95334081bd5d2735e4fb7d5c7db969a89fea5f848f7e8a69e3bf5f72c0d8",
+  "initial_clickhouse_parts": [
+    {
+      "table": "traffic_1m",
+      "physical_rows": 3169,
+      "bytes_on_disk": 14314
+    },
+    {
+      "table": "revenue_1m",
+      "physical_rows": 971,
+      "bytes_on_disk": 10283
+    },
+    {
+      "table": "events_raw",
+      "physical_rows": 6911275,
+      "bytes_on_disk": 376988355
+    },
+    {
+      "table": "traffic_1m_canonical",
+      "physical_rows": 3067,
+      "bytes_on_disk": 13818
+    },
+    {
+      "table": "event_identity_states",
+      "physical_rows": 6567877,
+      "bytes_on_disk": 526289064
+    },
+    {
+      "table": "revenue_1m_canonical",
+      "physical_rows": 839,
+      "bytes_on_disk": 10227
+    }
+  ],
+  "runtime_image_ids": "/streamforge-bench-ingest-1 sha256:086e7626d6bc6b8dce7de332e31a7e1efd87d42a7d1e9a13aaf660e8d1aa9d3d\n/streamforge-bench-query-1 sha256:9af8312ecd91c011aae99e62f11f3264ffc5d3103132daf7f77191dbbd64dbe5\n/streamforge-consumer-1 sha256:0b78e7059459185065cfa41e8cce225f961267492fc2f6745afa279954ba3ff3\n/streamforge-clickhouse-1 sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809\n/streamforge-kafka-1 sha256:836cafdad9f4825880d7cf1d5a21202915ae2527bd0ef1c3600c526ed7814d1f"
+}

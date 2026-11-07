@@ -72,3 +72,7 @@ Only local CPU/memory/disk costs; no cloud resources. Retained volumes and Go bu
 ## Interview defense
 
 Explain why broker acknowledgment precedes HTTP success, why timeout is an unknown outcome, why producer retry idempotence differs from logical-event deduplication, why currency must be a revenue grouping key, and why raw-row replacement cannot undo incremental aggregate double counting. The implemented replay strategy uses exact min/max payload states and rebuildable canonical metrics. Explain its conflict-withdrawal policy, temporary snapshot inconsistency and growing refresh/storage cost; these tradeoffs still need measured tuning.
+
+Phase 5 operations: [quarantine/replay](docs/replay.md), [benchmark methodology](docs/benchmarking.md), [measured results](docs/phase-5-report.md). Build the bounded tools with `make tools-build`; `make fault-test`, `make scaling-test` and `make benchmark` are explicit local operations and must run separately. Raw receipt journals are ignored by Git. No AWS resources are provisioned by these commands.
+
+Measured Phase 5: 10,335 Kafka-acknowledged events/s over an awake 900-second interval; all 9.30M accepted IDs/payloads verified after load. Ingestion latency, query/freshness, final aggregate reconciliation and 2x scaling targets **did not pass**. See the [one-page benchmark evidence](docs/benchmark-report.md) before using performance claims.

@@ -1,0 +1,26 @@
+{
+  "sampling": "approximately 6 seconds; not continuous maxima",
+  "samples": 130,
+  "containers": {
+    "clickhouse": {
+      "sampled_peak_memory_mib": 4096.0,
+      "sampled_peak_cpu_percent": 686.58
+    },
+    "kafka": {
+      "sampled_peak_memory_mib": 722.9,
+      "sampled_peak_cpu_percent": 167.84
+    },
+    "consumer": {
+      "sampled_peak_memory_mib": 88.33,
+      "sampled_peak_cpu_percent": 74.23
+    },
+    "bench-ingest": {
+      "sampled_peak_memory_mib": 100.4,
+      "sampled_peak_cpu_percent": 225.89
+    },
+    "bench-query": {
+      "sampled_peak_memory_mib": 18.34,
+      "sampled_peak_cpu_percent": 27.63
+    }
+  }
+}

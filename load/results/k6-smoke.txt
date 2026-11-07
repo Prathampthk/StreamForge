@@ -1,0 +1,38 @@
+  █ THRESHOLDS
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 51      10.178979/s
+    checks_succeeded...: 100.00% 51 out of 51
+    checks_failed......: 0.00%   0 out of 51
+
+    ✓ Kafka acknowledged every event
+
+    CUSTOM
+    kafka_acknowledged_events......: 5100   1017.897947/s
+
+    HTTP
+    http_req_duration..............: avg=22.34ms min=6.62ms med=13.03ms max=155.82ms p(90)=45.98ms p(95)=64.06ms
+      { expected_response:true }...: avg=22.34ms min=6.62ms med=13.03ms max=155.82ms p(90)=45.98ms p(95)=64.06ms
+    http_req_failed................: 0.00%  0 out of 51
+    http_reqs......................: 51     10.178979/s
+
+    EXECUTION
+    iteration_duration.............: avg=28.41ms min=9.12ms med=20.11ms max=163.23ms p(90)=57.44ms p(95)=71.93ms
+    iterations.....................: 51     10.178979/s
+    vus............................: 0      min=0         max=0
+    vus_max........................: 32     min=32        max=32
+
+    NETWORK
+    data_received..................: 541 kB 108 kB/s
+    data_sent......................: 1.2 MB 232 kB/s
+
+
+
+
+running (05.0s), 000/032 VUs, 51 complete and 0 interrupted iterations
+mixed ✓ [ 100% ] 000/032 VUs  5s  10.00 iters/s

@@ -1,0 +1,14 @@
+[
+  {
+    "view": "revenue_1m_refresh",
+    "status": "Running",
+    "last_success_time": "2026-11-07 03:13:37",
+    "exception": "Code: 241. DB::Exception: Query memory limit exceeded: would use 256.72 MiB (attempt to allocate chunk of 4.89 MiB bytes), maximum: 256.00 MiB: While executing SourceFromNativeStream. (MEMORY_LIMIT_EXCEEDED), Stack trace (when copying this message, always include the lines below):"
+  },
+  {
+    "view": "traffic_1m_refresh",
+    "status": "Scheduled",
+    "last_success_time": "2026-11-07 03:14:15",
+    "exception": "Code: 241. DB::Exception: (total) memory limit exceeded: would use 1.63 GiB (attempt to allocate chunk of 4.00 MiB bytes), current RSS: 3.60 GiB, maximum: 3.60 GiB. OvercommitTracker decision: Query was selected to stop by OvercommitTracker: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED), Stack trace (when copying this message, always include the lines below):"
+  }
+]

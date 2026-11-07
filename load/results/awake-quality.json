@@ -1,0 +1,6 @@
+{
+  "checked_at": "2026-11-07T03:59:51.275246+00:00",
+  "host_sleep_detected": false,
+  "uninterrupted_qualification": "no_sleep_recorded",
+  "scope": "host power events inside steady interval when summary exists; absence alone is not a throughput guarantee"
+}

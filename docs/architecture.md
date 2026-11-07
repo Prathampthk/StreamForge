@@ -1,4 +1,4 @@
-# Architecture: Phase 4
+# Architecture: Phase 5
 
 Implemented flow: HTTP ingestion validates/authenticates and waits for Kafka all-ISR acknowledgment → members of a Go consumer group process assigned partitions in bounded batches → synchronous ClickHouse raw insert plus incremental identity-state MV → next source offset commit. Periodic canonical revenue/traffic snapshots derive one contribution per unambiguous logical event ID. PostgreSQL remains control-plane metadata off the event path. The query API now reads only canonical minute snapshots, enforces tenant/window/currency bounds and rejects missing/failed/stale refreshes.
 
@@ -8,7 +8,7 @@ ClickHouse events_raw is forensic append evidence with 30-day event-time TTL. `e
 
 Snapshots can be stale after a failed/slow refresh; the query API checks system.view_refreshes and returns a conservative observed refresh timestamp; this is not a Kafka processing watermark. Full canonical refreshes have growing cost and do not establish the <5s SLO. See ADR 003 for why this correctness-first shape replaces direct append-based final sums, and consumer.md for ownership/retry/commit details. Same-ID changed payloads quarantine the whole identity and can withdraw a previously visible contribution; there is no silent replacement or implemented replay resolution.
 
-Pins: Kafka 4.0.2, ClickHouse 25.8.4.13, PostgreSQL 17.6, Go 1.26.0; review security patches before external exposure. All host ports bind loopback, sample credentials are development-only, no AWS credentials are needed. Budget >=6 GiB Docker memory and >=10 GiB free disk initially; infrastructure caps total 4.5 GiB plus ingest 256 MiB and each consumer 512 MiB. Three consumers plus test/build containers require additional Docker headroom.
+Pins: Kafka 4.0.2, ClickHouse 25.8.4.13, PostgreSQL 17.6, Go 1.26.0; review security patches before external exposure. All host ports bind loopback, sample credentials are development-only, no AWS credentials are needed. Phase 5 used approximately 7.75GiB Docker memory and a 4GiB ClickHouse cap; Kafka caps at 2GiB, PostgreSQL at 512MiB, ingest/query at 256MiB each and each consumer at 512MiB. Caps can sum above the host limit with optional tools, so inspect actual usage. Load journals, state and spill files require substantial additional free disk. Three consumers plus test/build containers require additional Docker headroom.
 
 Initial migrations are idempotent object creation, not a general migration engine; add versioned migrations for changes. No destructive backfill of prior synthetic rows is automatic. Local named volumes survive make down. The system has no redundant broker or ClickHouse disk and no proof of survival under host/disk loss. Tests prove specified local replay/crash behavior, not unqualified exactly-once semantics or achieved performance targets.
 
@@ -20,4 +20,4 @@ References checked against pinned behavior:
 - https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree
 - https://www.postgresql.org/docs/17/sql-createtable.html
 
-Optional Prometheus/Grafana/Collector/Jaeger are provisioned via a separate overlay. See query.md and observability.md. A bounded accepted-manifest audit independently computes per-ID canonical business values and compares raw evidence, conflict quarantine and minute snapshots. All performance targets remain unmeasured; no Phase 5 load or replay runtime is present.
+Optional Prometheus/Grafana/Collector/Jaeger are provisioned via a separate overlay. See query.md and observability.md. A bounded accepted-manifest audit independently computes per-ID canonical business values and compares raw evidence, conflict quarantine and minute snapshots. Phase 5 adds durable audited poison quarantine, a bounded replay CLI, acknowledged-event load/fault/scaling harnesses and actual performance evidence. See the Phase 5 report for missed targets and measurement qualifications; these are not universal guarantees.

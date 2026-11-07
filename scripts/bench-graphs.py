@@ -46,7 +46,9 @@ if interrupted:axes[0,0].text(.02,.96,'*Interrupted baseline: headers only',tran
 axes[0,1].bar(['p50','p95','p99','max'],[s['freshness_success_p50_seconds'] or float('nan'),s['freshness_success_p95_seconds'] or float('nan'),s['freshness_success_p99_seconds'] or float('nan'),s['freshness_success_max_seconds'] or float('nan')],color='steelblue');axes[0,1].axhline(5,color='crimson',linestyle='--');axes[0,1].set(title='Freshness: successful probes only',ylabel='Seconds')
 axes[1,0].bar(['Success','Failed/censored','Driver dropped'],[s['freshness_samples']-s['freshness_censored_or_failed'],s['freshness_censored_or_failed'],s['freshness_driver_dropped']],color=['seagreen','crimson','gray']);axes[1,0].set(title='Freshness sample outcomes',ylabel='Probes');axes[1,0].tick_params(axis='x',labelsize=8)
 axes[1,1].bar(['Success','Error'],[s['query_count']-s['query_errors'],s['query_errors']],color=['seagreen','crimson']);axes[1,1].set(title='Concurrent query outcomes',ylabel='Requests')
-if s['query_p95_seconds'] is None:axes[0,0].text(.02,.85,'Query: no successful responses',transform=axes[0,0].transAxes,fontsize=8)
-if s['freshness_success_p95_seconds'] is None:axes[0,1].text(.5,.5,'No successful probes',transform=axes[0,1].transAxes,ha='center')
+if s['query_p95_seconds'] is None:axes[0,0].text(.02,.85,'Query: no successful responses',transform=axes[0,0].transAxes,fontsize=8,bbox=dict(facecolor='white',alpha=.9,edgecolor='none'))
+if s['freshness_success_p95_seconds'] is None:
+ axes[0,1].clear();axes[0,1].set_title('Freshness quantiles unavailable');axes[0,1].axis('off')
+ axes[0,1].text(.5,.5,'No successful probes\nNo p50 / p95 / p99 / max measurement',transform=axes[0,1].transAxes,ha='center',va='center')
 fig.suptitle('Measured outcomes — '+('INTERRUPTED; no continuous SLO claim' if interrupted else stem))
 fig.savefig(out/(stem+'-outcomes.png'),dpi=160);plt.close(fig)

@@ -1,0 +1,17 @@
+{
+  "accepted": 9303564,
+  "missing": 0,
+  "payload_mismatch": 0,
+  "unverified_read_error": 0,
+  "read_retry_attempts": 55,
+  "canonical_ids_verified": true,
+  "revenue_exact": false,
+  "traffic_exact": false,
+  "unknown_delivery_events": 0,
+  "examples": [],
+  "drain_limit_seconds": 120,
+  "chunk_size": 2000,
+  "identity_audit_refreshes_paused": true,
+  "metrics_read_error": null,
+  "ok": false
+}

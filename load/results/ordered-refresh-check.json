@@ -1,0 +1,14 @@
+[
+  {
+    "view": "revenue_1m_refresh",
+    "status": "Scheduled",
+    "last_success_time": "2026-11-07 03:13:37",
+    "exception": "Code: 241. DB::Exception: Query memory limit exceeded: would use 512.04 MiB (attempt to allocate chunk of 7.93 MiB bytes), maximum: 512.00 MiB: (while reading column payload_max): (while reading from part /var/lib/clickhouse/store/223/2237306c-768e-4"
+  },
+  {
+    "view": "traffic_1m_refresh",
+    "status": "Running",
+    "last_success_time": "2026-11-07 03:14:15",
+    "exception": "Code: 241. DB::Exception: (total) memory limit exceeded: would use 1.80 GiB (attempt to allocate chunk of 4.47 MiB bytes), current RSS: 3.60 GiB, maximum: 3.60 GiB. OvercommitTracker decision: Query was selected to stop by OvercommitTracker: (while r"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "recorded_at": "2026-11-07T03:11:09.725642+00:00",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "tenant": "bench_7df80736c7ea",
+  "offered_rate": 10500,
+  "duration": "15m",
+  "query_concurrency": 2,
+  "query_windows": [
+    "15m",
+    "24h"
+  ],
+  "history_seed_events": 1440,
+  "all_components_share_host": true,
+  "consumer_replicas": 1,
+  "consumer_batch_records": 1000,
+  "consumer_workers": 4,
+  "kafka_partitions": 12,
+  "kafka_replication_factor": 1,
+  "compression": "lz4",
+  "acks": "all",
+  "producer_idempotence": true,
+  "trace_root_sample_ratio_for_benchmark_endpoints": 0,
+  "host_cpu": "Apple M4",
+  "host_cores": "10",
+  "host_memory_bytes": "17179869184",
+  "docker": "cpus=10 memory=8319438848",
+  "disk_free": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   278Gi   154Gi    65%    1.6M  1.6G    0%   /System/Volumes/Data"
+}
