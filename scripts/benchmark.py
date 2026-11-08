@@ -47,6 +47,9 @@ spec['allow_unready_query']=a.allow_unready_query
 spec['initial_query_ready_http_status']=query_baseline_status
 spec['initial_refresh_health']=ClickHouse().query("SELECT view,status,last_success_time,substring(exception,1,200) AS exception FROM system.view_refreshes WHERE database='streamforge'",{})
 spec['source_revision']=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+spec['clickhouse_migration_sha256']={str(file):hashlib.sha256(file.read_bytes()).hexdigest() for file in sorted(Path('migrations/clickhouse').glob('*.sql'))}
+spec['clickhouse_resource_profile_sha256']=hashlib.sha256(Path('deploy/clickhouse/resources.xml').read_bytes()).hexdigest()
+spec['clickhouse_identity_and_log_engines']=ClickHouse().query("SELECT database,name,create_table_query FROM system.tables WHERE (database='streamforge' AND name IN ('event_identity_states','event_identity_values')) OR (database='system' AND name IN ('metric_log','query_metric_log'))",{})
 digest=hashlib.sha256()
 for source in sorted([*Path('cmd').rglob('*.go'),*Path('internal').rglob('*.go')]):
  if not source.name.endswith('_test.go'):digest.update(str(source).encode()+b'\0'+source.read_bytes())

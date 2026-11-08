@@ -8,4 +8,12 @@
         <number_of_free_entries_in_pool_to_lower_max_size_of_merge>2</number_of_free_entries_in_pool_to_lower_max_size_of_merge>
         <number_of_free_entries_in_pool_to_execute_optimize_entire_partition>2</number_of_free_entries_in_pool_to_execute_optimize_entire_partition>
     </merge_tree>
+    <!-- Wide internal metric logs must not monopolize the small dev host.
+         Existing tables also need the documented ALTER settings; no rows expire. -->
+    <query_metric_log>
+        <engine>ENGINE = MergeTree PARTITION BY toYYYYMM(event_date) ORDER BY (event_date, event_time) SETTINGS index_granularity=256,merge_max_block_size=128,vertical_merge_algorithm_min_rows_to_activate=1,vertical_merge_algorithm_min_bytes_to_activate=1,min_rows_for_wide_part=0,min_bytes_for_wide_part=0</engine>
+    </query_metric_log>
+    <metric_log>
+        <engine>ENGINE = MergeTree PARTITION BY toYYYYMM(event_date) ORDER BY (event_date, event_time) SETTINGS index_granularity=256,merge_max_block_size=128,vertical_merge_algorithm_min_rows_to_activate=1,vertical_merge_algorithm_min_bytes_to_activate=1,min_rows_for_wide_part=0,min_bytes_for_wide_part=0</engine>
+    </metric_log>
 </clickhouse>
