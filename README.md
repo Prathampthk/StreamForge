@@ -2,7 +2,7 @@
 
 A backend analytics project in Go: validate events, acknowledge Kafka publication, persist with safe partition offsets, and query canonical minute metrics. Its purpose is to make distributed-system guarantees and failure boundaries explicit.
 
-**Status:** the local pipeline, DLQ/replay and measurements are implemented. Phase 6 AWS deployment/security/CI preparation is validated **offline only**. Nothing has been deployed to AWS. The growing-history snapshot bottleneck remains unresolved; this is not a production-ready analytics service.
+**Status:** the local pipeline, DLQ/replay and measurements are implemented. Phase 6 AWS deployment/security/CI preparation is validated **offline only**. Nothing has been deployed to AWS. A local [canonical-merge memory fix](docs/analytics-remediation-report.md) is implemented and tested in isolation; growing-history scan cost and end-to-end SLO acceptance remain open. This is not a production-ready analytics service.
 
 ## Architecture
 
@@ -106,4 +106,4 @@ Read [deployment/rotation](docs/aws/deployment.md), [cost assumptions](docs/aws/
 
 The hard correctness bug is append metrics overcounting retries even when raw storage deduplicates later. Full normalized min/max identity states fix regrouped replay/conflict semantics, but their full-refresh strategy then fails under growing history. That measured tradeoff is visible rather than hidden behind a generated-rate claim. Durable DLQ and PostgreSQL audit expose an honest at-least-once crash gap; bounded concurrency and contiguous offsets prevent skipping poison. Integer minor units and explicit currency avoid money errors. [Resume evidence](docs/resume-evidence.md) lists defensible claims and claims to avoid.
 
-The next engineering work is the growing-history refresh design and an explicitly approved cloud validation environment. No cloud performance, live IAM/SG, HA or cleanup result has been invented.
+The latest local remediation replaces hash-based full-identity grouping with streaming exact-state merges; see the [measurements and migration boundary](docs/analytics-remediation-report.md). The next performance gate is a new concurrent benchmark, followed by any explicitly approved cloud validation environment. No cloud performance, live IAM/SG, HA or cleanup result has been invented.

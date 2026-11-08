@@ -1,0 +1,212 @@
+{
+  "source_fix_commit": "70522316a32ed3e0eebebb2f23f6117e707fd2e9",
+  "harness_commit": "72a271b04f9713f8b963004c03b5e7d65b71a61c",
+  "scope": "synthetic isolated read/refresh validation only; historical benchmark volume not migrated; no new concurrent SLO results",
+  "local_integration_seconds": 89.678,
+  "local_integration": "pass",
+  "large_query_series": {
+    "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+    "settings": "max_memory_usage=268435456,max_threads=2,max_bytes_before_external_group_by=67108864,max_execution_time=60,max_block_size=1024,max_read_buffer_size=65536,optimize_move_to_prewhere=0,optimize_move_to_prewhere_if_final=0",
+    "container_memory": "2g",
+    "candidate_runs_second": true,
+    "sizes": [
+      {
+        "identities": 1000000,
+        "physical_rows": 1000003,
+        "queries": {
+          "group_by": {
+            "success": true,
+            "wall_seconds": 3.496,
+            "result": {
+              "count()": 999999,
+              "sum(cityHash64(payload))": 2267236067039133653,
+              "sum(toInt128(JSONExtractInt(payload, 'amount_cents')))": 4999500000
+            },
+            "query_log": {
+              "query_duration_ms": 3260,
+              "memory_usage": 201888787,
+              "read_rows": 1000003,
+              "read_bytes": 1184002528,
+              "type": "QueryFinish"
+            }
+          },
+          "final": {
+            "success": true,
+            "wall_seconds": 1.426,
+            "result": {
+              "count()": 999999,
+              "sum(cityHash64(payload))": 2267236067039133653,
+              "sum(toInt128(JSONExtractInt(payload, 'amount_cents')))": 4999500000
+            },
+            "query_log": {
+              "query_duration_ms": 1169,
+              "memory_usage": 59308926,
+              "read_rows": 1006389,
+              "read_bytes": 1175665728,
+              "type": "QueryFinish"
+            }
+          }
+        }
+      },
+      {
+        "identities": 5000000,
+        "physical_rows": 5000006,
+        "queries": {
+          "group_by": {
+            "success": false,
+            "wall_seconds": 12.658,
+            "error": "ClickHouse Code 241: per-query memory limit exceeded; full error retained privately",
+            "query_log": {
+              "query_duration_ms": 12306,
+              "memory_usage": 267033090,
+              "read_rows": 5000006,
+              "read_bytes": 5920004032,
+              "type": "ExceptionWhileProcessing"
+            }
+          },
+          "final": {
+            "success": true,
+            "wall_seconds": 7.41,
+            "result": {
+              "count()": 4999999,
+              "sum(cityHash64(payload))": 7600468429808960512,
+              "sum(toInt128(JSONExtractInt(payload, 'amount_cents')))": 24997500000
+            },
+            "query_log": {
+              "query_duration_ms": 7069,
+              "memory_usage": 72113912,
+              "read_rows": 5006392,
+              "read_bytes": 5847667232,
+              "type": "QueryFinish"
+            }
+          }
+        }
+      },
+      {
+        "identities": 10000000,
+        "physical_rows": 10000008,
+        "queries": {
+          "group_by": {
+            "success": false,
+            "wall_seconds": 19.127,
+            "error": "ClickHouse Code 241: per-query memory limit exceeded; full error retained privately",
+            "query_log": {
+              "query_duration_ms": 18716,
+              "memory_usage": 266203110,
+              "read_rows": 10000008,
+              "read_bytes": 11840004352,
+              "type": "ExceptionWhileProcessing"
+            }
+          },
+          "final": {
+            "success": true,
+            "wall_seconds": 9.465,
+            "result": {
+              "count()": 9999999,
+              "sum(cityHash64(payload))": 4034129289639600141,
+              "sum(toInt128(JSONExtractInt(payload, 'amount_cents')))": 49995000000
+            },
+            "query_log": {
+              "query_duration_ms": 9201,
+              "memory_usage": 89439609,
+              "read_rows": 10006394,
+              "read_bytes": 11687667552,
+              "type": "QueryFinish"
+            }
+          }
+        }
+      }
+    ],
+    "scope": "isolated synthetic query experiment; not an end-to-end benchmark"
+  },
+  "scheduled_refresh_repeat": {
+    "recorded_at": "2026-11-08T04:34:12.970567+00:00",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "docker_resources": "cpus=10 memory=8319438848",
+    "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+    "settings": "max_memory_usage=268435456,max_threads=2,max_bytes_before_external_group_by=67108864,max_execution_time=60,max_block_size=1024,max_read_buffer_size=65536,optimize_move_to_prewhere=0,optimize_move_to_prewhere_if_final=0",
+    "container_memory": "2g",
+    "candidate_runs_second": true,
+    "sizes": [
+      {
+        "identities": 10000000,
+        "physical_rows": 10000003,
+        "queries": {
+          "group_by": {
+            "success": false,
+            "wall_seconds": 12.162,
+            "error": "ClickHouse Code 241: per-query memory limit exceeded; full error retained privately",
+            "query_log": {
+              "query_duration_ms": 11845,
+              "memory_usage": 265351895,
+              "read_rows": 10000003,
+              "read_bytes": 11840002528,
+              "type": "ExceptionWhileProcessing"
+            }
+          },
+          "final": {
+            "success": true,
+            "wall_seconds": 6.792,
+            "result": {
+              "count()": 9999999,
+              "sum(cityHash64(payload))": 4034129289639600141,
+              "sum(toInt128(JSONExtractInt(payload, 'amount_cents')))": 49995000000
+            },
+            "query_log": {
+              "query_duration_ms": 6637,
+              "memory_usage": 89170456,
+              "read_rows": 10006389,
+              "read_bytes": 11687665728,
+              "type": "QueryFinish"
+            }
+          }
+        }
+      }
+    ],
+    "scope": "isolated synthetic query experiment; not an end-to-end benchmark",
+    "scheduled_refresh": {
+      "success": true,
+      "actual": [
+        9999999,
+        9000000,
+        1285714,
+        999999,
+        4995000000
+      ],
+      "expected": [
+        9999999,
+        9000000,
+        1285714,
+        999999,
+        4995000000
+      ],
+      "wait_seconds": 11.355,
+      "health": [
+        {
+          "view": "traffic_1m_refresh",
+          "status": "Running",
+          "last_success_time": "2026-11-08 04:35:51",
+          "exception": "",
+          "read_rows": 22140
+        },
+        {
+          "view": "revenue_1m_refresh",
+          "status": "Running",
+          "last_success_time": "2026-11-08 04:35:51",
+          "exception": "",
+          "read_rows": 4673141
+        }
+      ]
+    }
+  },
+  "hosted_ci": "success",
+  "hosted_ci_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42447375707",
+  "hosted_ci_jobs": {
+    "checks": "success",
+    "infrastructure": "success",
+    "images (ingest)": "success",
+    "images (consumer)": "success",
+    "images (query)": "success",
+    "images (tools)": "success"
+  }
+}
