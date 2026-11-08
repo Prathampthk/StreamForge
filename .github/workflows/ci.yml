@@ -1,0 +1,74 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.10'
+          cache: true
+      - name: Contracts, race detector, static checks and vulnerability gate
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements-dev.txt
+          PATH="$PWD/.venv/bin:$PATH" make test lint
+          test -z "$(gofmt -l cmd internal tests)"
+          go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+      - name: Independent binary reproducibility
+        run: ./scripts/reproducible.sh
+      - name: Fresh real-service integration suite
+        run: |
+          cp .env.example .env
+          ./scripts/integration-isolated.sh
+          python3 scripts/aws/check-db-grants.py
+      - name: Restore local services
+        if: always()
+        run: ./scripts/compose.sh down --remove-orphans
+  infrastructure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Terraform format, schemas and mocked safety plans
+        run: |
+          ./scripts/terraform.sh init -backend=false -input=false
+          TF_DIR=infra/terraform ./scripts/terraform.sh fmt -check -recursive
+          ./scripts/terraform.sh validate
+          ./scripts/terraform.sh test
+      - name: IaC security gate
+        run: docker run --rm -v "$PWD:/src:ro" aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb config --severity HIGH,CRITICAL --exit-code 1 /src/infra/terraform
+  images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        service: [ingest, consumer, query, tools]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build non-root runtime image (no publication)
+        run: docker build -f deploy/docker/${{ matrix.service }}.Dockerfile -t streamforge-check:${{ matrix.service }} .
+      - name: Independent runtime image reproducibility
+        if: matrix.service == 'ingest'
+        run: ./scripts/reproducible-image.sh
+      - name: Image and secret security gate
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb image --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 streamforge-check:${{ matrix.service }}

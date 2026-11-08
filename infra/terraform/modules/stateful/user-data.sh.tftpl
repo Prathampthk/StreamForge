@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+umask 077
+systemctl disable --now ecs || true
+command -v docker
+command -v aws
+systemctl enable --now docker
+install -d -m 700 /opt/streamforge
+export AWS_DEFAULT_REGION=${region}
+aws s3 cp s3://${bucket}/${release_id}/bootstrap/stateful.py /opt/streamforge/stateful.py --only-show-errors
+python3 /opt/streamforge/stateful.py --role ${role} --volume ${volume} --region ${region} --bucket ${bucket} --release ${release_id} --secret ${secret} --images '${images}' --domain ${name}.internal --log-group ${log_group}

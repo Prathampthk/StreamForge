@@ -1,0 +1,8 @@
+services:
+  kafka:
+    ports: !reset []
+  postgres:
+    ports: !reset []
+  clickhouse:
+    ports: !reset []
+    mem_limit: 2g

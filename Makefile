@@ -87,3 +87,25 @@ benchmark-audit:
 	python3 scripts/bench-audit.py load/results/raw/steady-15m --drain-timeout 120
 k6-smoke:
 	docker run --rm --network streamforge_default -v "$(CURDIR)/load/k6:/scripts:ro" -e DURATION=5s -e EVENTS_PER_SECOND=1000 -e TENANT=merchant_demo -e INGEST_URL=http://ingest-api:8080 -e INGEST_API_KEY=streamforge_demo_key_local_only_change_me grafana/k6:1.2.3 run /scripts/mixed.js
+
+.PHONY: cloud-check security reproducible workflow-check
+cloud-check:
+	./scripts/terraform.sh init -backend=false -input=false
+	TF_DIR=infra/terraform/bootstrap ./scripts/terraform.sh init -backend=false -input=false
+	TF_DIR=infra/terraform ./scripts/terraform.sh fmt -check -recursive
+	./scripts/terraform.sh validate
+	./scripts/terraform.sh test
+	TF_DIR=infra/terraform/bootstrap ./scripts/terraform.sh validate
+	python3 scripts/aws/check-render.py
+	$(MAKE) workflow-check
+security:
+	./scripts/go.sh go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+reproducible:
+	./scripts/reproducible.sh
+	./scripts/reproducible-image.sh
+workflow-check:
+	./scripts/go.sh go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+.PHONY: cloud-db-check
+cloud-db-check:
+	python3 scripts/aws/check-db-grants.py

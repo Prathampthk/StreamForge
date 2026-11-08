@@ -1,0 +1,22 @@
+{
+  "scope": "offline preparation only; no AWS resources or publication",
+  "go": "1.26.10",
+  "terraform": "1.17.1",
+  "aws_provider": "6.72.0",
+  "terraform_mock_plans_passed": 5,
+  "reachable_go_vulnerabilities": 0,
+  "ingest_image_high_critical_findings": 0,
+  "private_iac_high_critical_findings": 0,
+  "paired_ingest_image_id": "sha256:571ba869fde49b317768b4d3a1adb92c9af46d1c9ffac4564be38663b1638502",
+  "binary_reproducibility": [
+    "ingest-api",
+    "consumer",
+    "query-api",
+    "replayctl",
+    "eventgen"
+  ],
+  "isolated_clickhouse_grants": "pass",
+  "aws_authenticated_plan": "not run",
+  "aws_live_checks": "not run",
+  "github_hosted_ci": "pending preparation push"
+}

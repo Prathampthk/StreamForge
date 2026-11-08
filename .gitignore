@@ -17,3 +17,6 @@ __pycache__/
 .secrets/
 .aws-artifacts/
 infra/terraform/envs/dev/backend.tf
+
+*.tfvars.json
+!*.tfvars.json.example
