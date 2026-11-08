@@ -121,4 +121,3 @@ resource "aws_volume_attachment" "data" {
 output "instances" {
   value = { for k, v in aws_instance.host : k => v.id }
 }
-

@@ -339,4 +339,3 @@ output "groups" {
 output "secrets" {
   value = { for k, v in aws_secretsmanager_secret.service : k => v.arn }
 }
-

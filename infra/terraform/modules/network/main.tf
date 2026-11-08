@@ -102,4 +102,3 @@ output "endpoint_sg" {
 output "s3_prefix_list" {
   value = aws_vpc_endpoint.s3.prefix_list_id
 }
-
