@@ -13,7 +13,7 @@ images={}
 try:
  for name in ['ingest-api','consumer','query-api','tools']:
   dockerfile={'ingest-api':'ingest','consumer':'consumer','query-api':'query','tools':'tools'}[name]
-  run(['docker','build','--provenance=false','--output','type=docker,rewrite-timestamp=true','--build-arg','SOURCE_DATE_EPOCH='+run(['git','show','-s','--format=%ct','HEAD']),'--platform','linux/amd64','-f',f'deploy/docker/{dockerfile}.Dockerfile','-t',f'{registry}/{prefix}/{name}:{revision}', '.'])
+  run(['docker','buildx','build','--load','--provenance=false','--output','type=docker,rewrite-timestamp=true','--build-arg','SOURCE_DATE_EPOCH='+run(['git','show','-s','--format=%ct','HEAD']),'--platform','linux/amd64','-f',f'deploy/docker/{dockerfile}.Dockerfile','-t',f'{registry}/{prefix}/{name}:{revision}', '.'])
  for name,source in json.loads(Path('deploy/vendor-images.json').read_text()).items():
   run(['docker','pull','--platform','linux/amd64',source]);run(['docker','tag',source,f'{registry}/{prefix}/{name}:{revision}'])
  for name in ['ingest-api','consumer','query-api','tools','kafka','clickhouse','postgres']:

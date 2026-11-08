@@ -8,9 +8,9 @@ COPY cmd/ cmd/
 COPY internal/ internal/
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w -buildid=" -o /ingest-api ./cmd/ingest-api && touch -d "@${SOURCE_DATE_EPOCH}" /ingest-api
 
+RUN mkdir -p /rootfs/etc/ssl/certs && cp /etc/ssl/certs/ca-certificates.crt /rootfs/etc/ssl/certs/ && cp /ingest-api /rootfs/ && find /rootfs -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} +
 FROM scratch
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /ingest-api /ingest-api
+COPY --from=build /rootfs/ /
 USER 65532:65532
 EXPOSE 8080
 ENTRYPOINT ["/ingest-api"]

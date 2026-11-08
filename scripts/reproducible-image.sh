@@ -3,7 +3,7 @@ set -eu
 cd "$(dirname "$0")/.."
 task_epoch=$(git show -s --format=%ct HEAD)
 for pass in one two; do
- docker build --no-cache --provenance=false --output type=docker,rewrite-timestamp=true --build-arg "SOURCE_DATE_EPOCH=$task_epoch" -f deploy/docker/ingest.Dockerfile -t "streamforge-repro:$pass" .
+ docker buildx build --load --no-cache --provenance=false --output type=docker,rewrite-timestamp=true --build-arg "SOURCE_DATE_EPOCH=$task_epoch" -f deploy/docker/ingest.Dockerfile -t "streamforge-repro:$pass" .
 done
 task_one=$(docker image inspect --format '{{.Id}}' streamforge-repro:one)
 task_two=$(docker image inspect --format '{{.Id}}' streamforge-repro:two)

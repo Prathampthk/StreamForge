@@ -65,8 +65,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          driver: docker-container
+          driver-opts: image=moby/buildkit:v0.34.2@sha256:c5f8862f52499773af85bc07695b2379ef08e8002352b0df2c4864c91d78dabe
       - name: Build non-root runtime image (no publication)
-        run: docker build -f deploy/docker/${{ matrix.service }}.Dockerfile -t streamforge-check:${{ matrix.service }} .
+        run: docker buildx build --load -f deploy/docker/${{ matrix.service }}.Dockerfile -t streamforge-check:${{ matrix.service }} .
       - name: Independent runtime image reproducibility
         if: matrix.service == 'ingest'
         run: ./scripts/reproducible-image.sh

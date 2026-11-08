@@ -7,8 +7,8 @@ RUN go mod download
 COPY cmd/ cmd/
 COPY internal/ internal/
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w -buildid=" -o /consumer ./cmd/consumer && touch -d "@${SOURCE_DATE_EPOCH}" /consumer
+RUN mkdir -p /rootfs/etc/ssl/certs && cp /etc/ssl/certs/ca-certificates.crt /rootfs/etc/ssl/certs/ && cp /consumer /rootfs/ && find /rootfs -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} +
 FROM scratch
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /consumer /consumer
+COPY --from=build /rootfs/ /
 USER 65532:65532
 ENTRYPOINT ["/consumer"]
