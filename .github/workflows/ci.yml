@@ -37,6 +37,7 @@ jobs:
           cp .env.example .env
           ./scripts/integration-isolated.sh
           python3 scripts/aws/check-db-grants.py
+          python3 scripts/check-identity-values-migration.py
       - name: Restore local services
         if: always()
         run: ./scripts/compose.sh down --remove-orphans

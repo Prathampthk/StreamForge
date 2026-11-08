@@ -19,17 +19,17 @@ func TestCanonicalFinalAcrossUnmergedParts(t *testing.T) {
 	query := func(sql string) string { return queryCH(t, c, sql) }
 	query("CREATE DATABASE " + db)
 	defer query("DROP DATABASE " + db + " SYNC")
-	query("CREATE TABLE " + db + ".event_identity_states AS streamforge.event_identity_states")
-	query("SYSTEM STOP MERGES " + db + ".event_identity_states")
-	defer query("SYSTEM START MERGES " + db + ".event_identity_states")
+	query("CREATE TABLE " + db + ".event_identity_values AS streamforge.event_identity_values")
+	query("SYSTEM STOP MERGES " + db + ".event_identity_values")
+	defer query("SYSTEM START MERGES " + db + ".event_identity_values")
 	for _, name := range []string{"events_canonical", "event_identity_conflicts"} {
 		ddl := query("SELECT create_table_query FROM system.tables WHERE database='streamforge' AND name='" + name + "' FORMAT TabSeparatedRaw")
 		if !strings.Contains(ddl, "FINAL") {
 			t.Fatal("canonical merge migration is not installed")
 		}
 		ddl = strings.Replace(ddl, "streamforge."+name, db+"."+name, 1)
-		ddl = strings.ReplaceAll(ddl, "streamforge.event_identity_states", db+".event_identity_states")
-		ddl = strings.ReplaceAll(ddl, "FROM event_identity_states", "FROM "+db+".event_identity_states")
+		ddl = strings.ReplaceAll(ddl, "streamforge.event_identity_values", db+".event_identity_values")
+		ddl = strings.ReplaceAll(ddl, "FROM event_identity_values", "FROM "+db+".event_identity_values")
 		query(ddl)
 	}
 	ids := make([]string, 24)
@@ -46,9 +46,9 @@ func TestCanonicalFinalAcrossUnmergedParts(t *testing.T) {
 		selects := make([]string, len(indices))
 		for j, i := range indices {
 			payload := "unhex('" + hex.EncodeToString([]byte(values[i])) + "')"
-			selects[j] = fmt.Sprintf("SELECT toUUID('%s'),initializeAggregation('minState',%s),initializeAggregation('maxState',%s)", ids[i], payload, payload)
+			selects[j] = fmt.Sprintf("SELECT toUUID('%s'),%s,%s", ids[i], payload, payload)
 		}
-		query("INSERT INTO " + db + ".event_identity_states " + strings.Join(selects, " UNION ALL "))
+		query("INSERT INTO " + db + ".event_identity_values " + strings.Join(selects, " UNION ALL "))
 	}
 	all := make([]int, len(ids))
 	for i := range all {
@@ -88,7 +88,7 @@ func TestCanonicalFinalAcrossUnmergedParts(t *testing.T) {
 	}
 	insert([]int{0, 1, 2, 3, 4}, changed)
 	check := func() {
-		original := "SELECT event_id,minMerge(payload_min) AS payload,maxMerge(payload_max) AS last_payload FROM " + db + ".event_identity_states GROUP BY event_id HAVING payload=last_payload"
+		original := "SELECT event_id,min(payload_min) AS payload,max(payload_max) AS last_payload FROM " + db + ".event_identity_values GROUP BY event_id HAVING payload=last_payload"
 		expected := query("SELECT toString(event_id),payload FROM (" + original + ") ORDER BY event_id FORMAT TabSeparatedRaw")
 		got := query("SELECT toString(event_id),payload FROM " + db + ".events_canonical ORDER BY event_id FORMAT TabSeparatedRaw")
 		if got != expected {
@@ -107,8 +107,8 @@ func TestCanonicalFinalAcrossUnmergedParts(t *testing.T) {
 		}
 	}
 	check()
-	query("SYSTEM START MERGES " + db + ".event_identity_states")
-	query("OPTIMIZE TABLE " + db + ".event_identity_states FINAL")
+	query("SYSTEM START MERGES " + db + ".event_identity_values")
+	query("OPTIMIZE TABLE " + db + ".event_identity_values FINAL")
 	check()
 	t.Log("exact payloads, global conflict withdrawal, predicate safety and Int128 totals hold before/after merges")
 }

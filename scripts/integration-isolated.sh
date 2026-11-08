@@ -2,7 +2,7 @@
 # Fresh owned infrastructure; existing StreamForge data/ports are untouched.
 set -eu
 cd "$(dirname "$0")/.."
-project=streamforge-phase6-check
+project=${STREAMFORGE_TEST_PROJECT:-streamforge-phase6-check}
 docker volume create streamforge_go_mod >/dev/null
 docker volume create streamforge_go_build >/dev/null
 compose() { docker compose -p "$project" --env-file .env -f deploy/compose.yaml -f deploy/compose.consumer.yaml -f deploy/compose.ci.yaml "$@"; }

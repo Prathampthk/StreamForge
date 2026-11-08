@@ -177,9 +177,9 @@ else:
   else:raise RuntimeError('ClickHouse never became ready')
   ch('CREATE DATABASE IF NOT EXISTS streamforge;')
   initial_schema('clickhouse',schema,lambda sql:ch('USE streamforge;\n'+sql))
-  for view in ['revenue_1m_mv','traffic_1m_mv','event_identity_mv']:ch('USE streamforge; ALTER TABLE '+view+' MODIFY SQL SECURITY DEFINER DEFINER=CURRENT_USER;')
+  for view in ['revenue_1m_mv','traffic_1m_mv','event_identity_values_mv']:ch('USE streamforge; ALTER TABLE '+view+' MODIFY SQL SECURITY DEFINER DEFINER=CURRENT_USER;')
   for user in ['consumer','query']:
    digest=hashlib.sha256(secret['passwords'][user].encode()).hexdigest()
    ch(f"CREATE USER IF NOT EXISTS sf_{user} IDENTIFIED WITH sha256_hash BY '{digest}' HOST IP '10.42.0.0/16';")
-  ch('GRANT INSERT ON streamforge.events_raw TO sf_consumer; GRANT SELECT(event_id) ON streamforge.event_identity_states TO sf_consumer; GRANT SELECT ON streamforge.revenue_1m_canonical TO sf_query; GRANT SELECT ON streamforge.traffic_1m_canonical TO sf_query; GRANT SELECT ON system.view_refreshes TO sf_query; GRANT SHOW TABLES ON streamforge.* TO sf_query;')
+  ch('GRANT INSERT ON streamforge.events_raw TO sf_consumer; GRANT SELECT(event_id) ON streamforge.event_identity_values TO sf_consumer; GRANT SELECT ON streamforge.revenue_1m_canonical TO sf_query; GRANT SELECT ON streamforge.traffic_1m_canonical TO sf_query; GRANT SELECT ON system.view_refreshes TO sf_query; GRANT SHOW TABLES ON streamforge.* TO sf_query;')
 print('Stateful configuration completed; no secret values logged.')

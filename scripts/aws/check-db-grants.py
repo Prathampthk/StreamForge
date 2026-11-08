@@ -33,15 +33,15 @@ try:
  else:raise RuntimeError('disposable server never became ready')
  for file in sorted(Path('migrations/clickhouse').glob('*.sql')):
   subprocess.run(['docker','exec','-i',name,'clickhouse-client','--config-file','/tmp/check-client.xml','--multiquery','--database','streamforge'],input=file.read_bytes(),check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
- for view in ['revenue_1m_mv','traffic_1m_mv','event_identity_mv']:sql('ALTER TABLE '+view+' MODIFY SQL SECURITY DEFINER DEFINER=CURRENT_USER')
+ for view in ['revenue_1m_mv','traffic_1m_mv','event_identity_values_mv']:sql('ALTER TABLE '+view+' MODIFY SQL SECURITY DEFINER DEFINER=CURRENT_USER')
  digest=hashlib.sha256(password.encode()).hexdigest()
  for user in [query,consumer]:sql(f"CREATE USER {user} IDENTIFIED WITH sha256_hash BY '{digest}'")
  sql(f'GRANT SELECT ON streamforge.revenue_1m_canonical TO {query}');sql(f'GRANT SELECT ON streamforge.traffic_1m_canonical TO {query}')
  sql(f'GRANT SELECT ON system.view_refreshes TO {query}');sql(f'GRANT SHOW TABLES ON streamforge.* TO {query}')
- sql(f'GRANT INSERT ON streamforge.events_raw TO {consumer}');sql(f'GRANT SELECT(event_id) ON streamforge.event_identity_states TO {consumer}')
+ sql(f'GRANT INSERT ON streamforge.events_raw TO {consumer}');sql(f'GRANT SELECT(event_id) ON streamforge.event_identity_values TO {consumer}')
  sql('SELECT count() FROM revenue_1m_canonical',query);sql('SELECT count() FROM system.view_refreshes',query)
  denied('SELECT count() FROM events_raw',query);denied('SELECT payload_json FROM events_raw LIMIT 1',consumer);denied('CREATE TABLE phase6_denied(x UInt8) ENGINE=Memory',consumer)
- sql('SELECT count() FROM event_identity_states WHERE 0',consumer)
+ sql('SELECT count() FROM event_identity_values WHERE 0',consumer)
  at=datetime.now(timezone.utc).isoformat();event=dict(schema_version=1,event_id=str(uuid.uuid4()),tenant_id='phase6_acl_'+suffix,user_id='test_user',event_type='page_view',occurred_at=at)
  stamp=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S.%f')[:23]
  row=event|dict(occurred_at=stamp,received_at=stamp,kafka_topic='phase6-grant-check',kafka_partition=0,kafka_offset=0,sink_batch_id=suffix,payload_json=json.dumps(event,separators=(',',':')))

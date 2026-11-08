@@ -50,7 +50,7 @@ func (s *Sink) Insert(ctx context.Context, b pipeline.Batch) (err error) {
 	return s.execute(ctx, params, io.MultiReader(strings.NewReader(insertSQL), bytes.NewReader(b.Body)), "")
 }
 func (s *Sink) Ready(ctx context.Context) error {
-	return s.execute(ctx, url.Values{"database": {"streamforge"}, "wait_end_of_query": {"1"}}, strings.NewReader("SELECT count() FROM event_identity_states WHERE 0"), "0")
+	return s.execute(ctx, url.Values{"database": {"streamforge"}, "wait_end_of_query": {"1"}}, strings.NewReader("SELECT count() FROM event_identity_values WHERE 0"), "0")
 }
 func (s *Sink) execute(ctx context.Context, params url.Values, body io.Reader, expected string) error {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, s.endpoint+"/?"+params.Encode(), body)

@@ -19,8 +19,9 @@ SETTINGS = 'max_memory_usage=268435456,max_threads=2,max_bytes_before_external_g
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--id-layout', choices=['random','ordered'], default='random', help='ordered reproduces the historical fixture; random creates overlapping UUID ranges')
     parser.add_argument('--sizes', default='10000,100000,500000,1000000')
-    parser.add_argument('--refresh', action='store_true', help='also run the real migration and both scheduled refreshes after seeding')
+    parser.add_argument('--refresh', action='store_true', help='exercise legacy migrations 001-004 only; latest cutover is tested by check-identity-values-migration.py')
     parser.add_argument('--memory', choices=['1g','2g','4g'], default='2g')
     parser.add_argument('--output', default='load/results/raw/analytics-merge/result.json')
     args = parser.parse_args()
@@ -30,7 +31,7 @@ def main():
     name = 'streamforge-merge-experiment-' + uuid.uuid4().hex[:12]
     password = secrets.token_urlsafe(32)
     started = False
-    results = {'recorded_at': datetime.now(timezone.utc).isoformat(), 'platform': platform.platform(), 'docker_resources': subprocess.check_output(['docker','info','--format','cpus={{.NCPU}} memory={{.MemTotal}}'],text=True).strip(), 'image': IMAGE, 'settings': SETTINGS, 'container_memory': args.memory, 'candidate_runs_second': True, 'sizes': [], 'scope': 'isolated synthetic query experiment; not an end-to-end benchmark'}
+    results = {'recorded_at': datetime.now(timezone.utc).isoformat(), 'platform': platform.platform(), 'docker_resources': subprocess.check_output(['docker','info','--format','cpus={{.NCPU}} memory={{.MemTotal}}'],text=True).strip(), 'image': IMAGE, 'settings': SETTINGS, 'container_memory': args.memory, 'candidate_runs_second': True, 'id_layout': args.id_layout, 'schema_scope': 'legacy migrations 001-004 only', 'sizes': [], 'scope': 'isolated synthetic query experiment; not an end-to-end benchmark'}
 
     def sql(statement, query_id=None, check=True, database=None, multiquery=False):
         cmd = ['docker', 'exec', '-i', name, 'clickhouse-client', '--config-file', '/tmp/experiment.xml']
@@ -67,11 +68,14 @@ def main():
             # Synthetic JSON strings exercise state size; this is not an event-contract or Kafka load test.
             payload = "toJSONString(map('schema_version','1','event_id',toString(id),'tenant_id','experiment','user_id',concat('user_',toString(number%10000)),'event_type',if(number%10=0,'purchase','api_request'),'occurred_at','2026-11-07T12:00:00Z','amount_cents',toString(number%10000),'currency','USD','status_code',if(number%7=0,'503','200'),'attributes',repeat('abcdef',24)))"
             for start in range(previous, size, 50000):
-                source = f"SELECT reinterpretAsUUID(toUInt128(number+1)) AS id,{payload} AS payload FROM numbers({start},{min(50000,size-start)})"
+                identity = "reinterpretAsUUID(toUInt128(number+1))" if args.id_layout == 'ordered' else "reinterpretAsUUID(MD5(toString(number)))"
+                source = f"SELECT {identity} AS id,{payload} AS payload FROM numbers({start},{min(50000,size-start)})"
                 sql(f"INSERT INTO identities SELECT id,initializeAggregation('minState',payload),initializeAggregation('maxState',payload) FROM ({source}) SETTINGS max_threads=1,max_block_size=4096")
             # Different insert blocks produce unmerged duplicates and conflicts (ID 1).
-            sql('INSERT INTO identities SELECT * FROM identities WHERE event_id IN (reinterpretAsUUID(toUInt128(1)),reinterpretAsUUID(toUInt128(2))) LIMIT 2')
-            sql("INSERT INTO identities SELECT reinterpretAsUUID(toUInt128(1)),minState('changed tenant/minute/currency'),maxState('changed tenant/minute/currency')")
+            first = 'reinterpretAsUUID(toUInt128(1))' if args.id_layout == 'ordered' else "reinterpretAsUUID(MD5('0'))"
+            second = 'reinterpretAsUUID(toUInt128(2))' if args.id_layout == 'ordered' else "reinterpretAsUUID(MD5('1'))"
+            sql(f'INSERT INTO identities SELECT * FROM identities WHERE event_id IN ({first},{second}) LIMIT 2')
+            sql(f"INSERT INTO identities SELECT {first},minState('changed tenant/minute/currency'),maxState('changed tenant/minute/currency')")
             row = {'identities': size, 'physical_rows': int(sql('SELECT count() FROM identities').stdout), 'queries': {}}
             for label, source_query in [('group_by', BASELINE), ('final', CANDIDATE)]:
                 identifier = 'merge_' + uuid.uuid4().hex
@@ -103,7 +107,7 @@ def main():
         if args.refresh:
             sql('CREATE DATABASE streamforge')
             sql('RENAME TABLE identities TO streamforge.event_identity_states')
-            for file in sorted(Path('migrations/clickhouse').glob('*.sql')):
+            for file in sorted(Path('migrations/clickhouse').glob('00[1-4]_*.sql')):
                 sql(file.read_text(), database='streamforge', multiquery=True)
                 if file.name.startswith('002_'):
                     sql('SYSTEM STOP VIEW streamforge.revenue_1m_refresh')
