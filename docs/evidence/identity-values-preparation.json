@@ -1,0 +1,24 @@
+{
+  "migration_004_retained_applied": true,
+  "retained_refresh_recovery": "failed",
+  "legacy_identity_physical_rows_observed": 15871565,
+  "raw_rows_observed": 16231980,
+  "new_storage_integration": "pass",
+  "new_storage_integration_seconds": 82.886,
+  "disposable_migration_test": "pass: exact 64 identities, guard, dual write, checkpoint, cutover, conflict, evidence preservation and repeats",
+  "retained_005_006": "not run: approval review requires explicit authorization",
+  "new_concurrent_benchmark": "not started",
+  "aws_authenticated_operations": "not run",
+  "github_ci": "success",
+  "github_ci_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42450557963",
+  "source_commit": "076e26b381ea619f4b6763207f7aa6468a3d2b7f",
+  "github_ci_jobs": {
+    "checks": "success",
+    "infrastructure": "success",
+    "images (ingest)": "success",
+    "images (consumer)": "success",
+    "images (query)": "success",
+    "images (tools)": "success"
+  },
+  "corrected_random_fixture": "pass at 10000 identities; legacy schema 001-004 only"
+}

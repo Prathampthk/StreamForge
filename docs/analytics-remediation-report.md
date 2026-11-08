@@ -1,5 +1,7 @@
 # Local analytics memory remediation
 
+**Retained-data follow-up:** migration 004 has now been applied locally and did **not** restore the retained database: overlapping random-UUID parts still produced query/global memory failures. The earlier ordered-fixture results below are historical, limited evidence. A subsequent additive SimpleAggregateFunction string-storage migration (005/006), exact backfill tool and migration ledger passed disposable checks, but their retained-data execution requires explicit approval. No new 15-minute benchmark has started. See [ADR 010](adr/010-simple-identity-values.md).
+
 The canonical identity read now uses `AggregatingMergeTree FINAL` followed by `finalizeAggregation` instead of a full-history hash `GROUP BY event_id`. It retains exact full-string min/max conflict detection, duplicate-safe metrics and the existing Kafka acknowledgment/offset boundaries. No PostgreSQL hot-path ledger, hash-based identity substitution, retention change or new service was introduced.
 
 ## Implemented files
@@ -31,8 +33,26 @@ Small results are committed in [machine-readable evidence](evidence/analytics-me
 
 ## Operational boundary
 
-Only disposable test databases have received migration 004. Existing benchmark facts, identity states, stored historical results and credentials are untouched. An existing local volume needs a reviewed application of migration 004 before its running query service benefits; this report does not claim its old unhealthy views were repaired in place. No AWS operations were performed.
+Migration 004 was applied to the retained local volume after user approval, with its previous four view definitions saved privately for rollback. It did not restore healthy refreshes. Original benchmark facts, identity states, historical results and credentials remain intact. Task-owned diagnostic copies were created; their merge work is paused. No AWS operations were performed.
 
 For a new isolated environment, apply all numbered migrations in order. For an existing environment, review/apply **004 only** with its schema-owner credentials. It replaces two ordinary views and modifies two refresh queries; it neither deletes facts nor rewrites identity states. A failed refresh still retains its old snapshot and query readiness still rejects stale/failed/disabled work. Rollback requires restoring the original view definitions from migration 002 and refresh queries from 003; it does not require deleting data.
 
-This removes the demonstrated hash-aggregation memory failure within the measured scope. It does **not** make refresh work incremental: scan/JSON/merge cost still grows with retained identities and unmerged part count. Concurrent 15-minute ingestion/query/freshness and 1→3 scaling SLOs have not been remeasured. Phase 5's failed SLOs remain the current end-to-end evidence. The next performance gate is a new, separately labeled healthy-start concurrent benchmark; never overwrite the prior run or present this query experiment as 10k/s acceptance.
+The ordered synthetic fixture avoided the demonstrated hash-aggregation memory failure within its measured scope; retained-data recovery did not pass. It does **not** make refresh work incremental: scan/JSON/merge cost still grows with retained identities and unmerged part count. Concurrent 15-minute ingestion/query/freshness and 1→3 scaling SLOs have not been remeasured. Phase 5's failed SLOs remain the current end-to-end evidence. The next performance gate is a new, separately labeled healthy-start concurrent benchmark; never overwrite the prior run or present this query experiment as 10k/s acceptance.
+
+## Subsequent exact-string migration, awaiting retained-data approval
+
+Migrations 005/006 introduce `event_identity_values` with exact min/max SimpleAggregateFunction strings and 512-row granules, an additive incremental MV, and a guarded cutover. The backfill script pauses the local consumer/refreshes and legacy raw/identity merges, copies bounded UUID ranges, compares every full min/max string and ID, checkpoints only verified ranges, checks total cardinality, then changes read views. It keeps original raw facts and legacy tables. The retired legacy write MV is permanently detached, preserving its definition; it can be attached again for a reviewed rollback. New writes after cutover are absent from the frozen legacy table, so rollback after new traffic requires reverse backfill before restoring the old read path.
+
+The schema ledger prevents replaying old read-view definitions over a completed cutover. `scripts/migrate-clickhouse.sh` skips recorded versions; `scripts/migrate.sh` uses it. No marker is written for a partially verified backfill. The cutover refuses retained legacy data without the verification marker.
+
+Actual checks:
+
+- Full isolated integration: **PASS, 82.886s**, including exact payload/conflict/Int128/predicate behavior before/after physical merges on the new table type.
+- Disposable backfill/cutover: **PASS**, 64 exact-verified identities across 16 partitions; unverified cutover refusal, dual writes, unchanged raw/legacy evidence, conflict withdrawal, stopped legacy writes, completed-invocation repeat and migration-ledger repeat.
+- Python compilation, shell syntax and `git diff --check`: **PASS**.
+- Retained-data 005/006 backfill/cutover: **NOT RUN**. Automatic approval review rejected it because it exceeds the earlier migration-004 approval and pauses services/copies retained data/permanently detaches the legacy write MV.
+- New concurrent benchmark: **NOT STARTED**; readiness must recover first.
+
+The earlier prototype count of 827,392 identities demonstrates a read in a task-owned partial copy with competing work paused, not an exhaustive retained-data migration or full-load acceptance. Initial diagnostic copies and large INSERT SELECT attempts hit memory limits; those failures remain in the private logs. The migration-script fixture first had a container-reference typo, corrected before its passing run.
+
+[GitHub CI for the prepared migration](https://github.com/Prathampthk/StreamForge/actions/runs/42450557963) passed all six jobs on source `076e26b381ea619f4b6763207f7aa6468a3d2b7f`, including the new disposable migration/ledger check, database grants and real-service integration. [Current preparation evidence](evidence/identity-values-preparation.json) separates that result from the blocked retained-data execution. The corrected random-UUID legacy fixture also passed at 10,000 identities; larger-history recovery is still unverified.

@@ -2,6 +2,8 @@
 
 **No AWS environment has been deployed.** The user chose offline preparation. Commands below are a reviewed procedure for later use, not executed evidence. An authenticated plan, its spend, any publication/apply and any deletion require separate approval. The current Phase 5 full-history refresh bottleneck remains unresolved; this dev topology does not establish a usable large-history analytics demo.
 
+See [account setup and information to provide](account-setup.md) for initial authentication.
+
 ## Topology and prerequisites
 
 Commercial AWS, default `us-east-2`; one availability zone hosts ECS tasks, Kafka/PostgreSQL and ClickHouse. Two private subnets are defined; the second supports a later reviewed topology change. Six interface endpoints (ECR API/DKR, logs, secrets, SSM, SSM messages) occupy the first AZ; S3 uses a gateway endpoint. No NAT, public data-node IP, SSH ingress or public database listener is provisioned. Optional ALB/public DNS needs an existing regional ACM certificate, Route53 public zone, hostname and explicit client CIDRs. Only HTTPS 443 forwards the two public API paths; health/metrics/replay endpoints are not public routes. The ALB-to-task hop is private HTTP.
