@@ -88,6 +88,8 @@ try:
 finally:
  # Legacy states remain on disk. Keep their now-retired merge work paused
  # after cutover; no legacy data is dropped or truncated.
- if not cutover:sql('SYSTEM START MERGES event_identity_states;')
- sql('SYSTEM START MERGES events_raw; SYSTEM START VIEW revenue_1m_refresh; SYSTEM START VIEW traffic_1m_refresh;')
- if running:subprocess.run(['docker','start',consumer],check=True,stdout=subprocess.DEVNULL)
+ try:
+  if not cutover:sql('SYSTEM START MERGES event_identity_states;')
+  sql('SYSTEM START MERGES events_raw; SYSTEM START VIEW revenue_1m_refresh; SYSTEM START VIEW traffic_1m_refresh;')
+ finally:
+  if running:subprocess.run(['docker','start',consumer],check=True,stdout=subprocess.DEVNULL)
