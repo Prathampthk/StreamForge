@@ -17,26 +17,26 @@
 |---|---|
 | Go unit/race tests and go vet after dependency fixes | PASS; TLS trust/rejection and Kafka credential-without-TLS cases included |
 | `govulncheck@v1.1.4 ./...` | PASS, zero reachable vulnerabilities; report also notes uncalled/imported-module findings, so not “no vulnerabilities anywhere” |
-| Isolated full integration suite | PASS on corrected fresh-topic leader wait; recorded local suite duration 82.104s before the last two small dependency patches; final-dependency rerun is recorded below |
+| Isolated full integration suite | PASS after the fresh-topic leader wait fix; final patched-dependency rerun: **85.368s**. This is suite duration, not a performance measurement |
 | Terraform init/validate | PASS with provider 6.72.0, both dev and remote-state bootstrap; backend/credentials absent for offline checks |
 | Terraform fmt and `terraform test` | PASS, five mocked plan cases: private bootstrap, missing-image rejection, unrestricted-ingress rejection, private enabled services and opt-in HTTPS |
 | `make cloud-check` | PASS for offline schemas/plans, leaf validation/rendering and actionlint; no AWS API calls |
 | Certificate/render check | PASS for broker/metadata/ClickHouse leaf names, wrong-host rejection, private file modes and secure listeners; temp keys removed |
 | Workflow actionlint 1.7.12 / Python compile / shell syntax | PASS; this does not prove GitHub/AWS environment settings exist |
 | Independent binaries | PASS, all five binaries identical across paired builds with fixed flags |
-| Independent ingest runtime image | PASS after filesystem timestamp normalization/provenance disabling; paired image ID `sha256:571ba869fde49b317768b4d3a1adb92c9af46d1c9ffac4564be38663b1638502`; other images are built/scanned by CI, not claimed byte-compared locally |
+| Independent ingest runtime image | PASS on GitHub with pinned BuildKit, normalized root filesystem metadata and provenance disabled; paired image ID `sha256:1f62a12ba2a9004aa8c9bd3c0505b1dfd21b751bc666cbb4f3b4fb9309ccaf93` at source commit `9b3a6c9`; other images are built/scanned by CI, not claimed byte-compared |
 | Trivy ingest image | PASS, zero HIGH/CRITICAL findings detected after additional dependency patches; vendor-image scan success is not claimed |
 | Trivy default private IaC profile | PASS, zero HIGH/CRITICAL findings detected; no blanket suppressions |
 | Disposable ClickHouse privilege check | PASS: aggregate/refresh reads allowed; query raw read/insert denied; consumer insert/MV/readiness allowed; consumer raw read and DDL denied. Uses only its own tmpfs instance and leaves benchmark volumes untouched |
 | Authenticated AWS plan / live IAM-SG negative checks / smoke / restart / load / cleanup | NOT RUN, intentionally offline; mocks are not substitutes |
 
-Local raw command logs are retained privately under ignored `.aws-artifacts/`. Small machine-readable validation evidence is committed under `docs/evidence/`. GitHub-hosted CI is recorded separately once the preparation commit is pushed; local checks are not claimed as a remote run.
+Local raw command logs are retained privately under ignored `.aws-artifacts/`. Small machine-readable validation evidence is committed under `docs/evidence/`. [GitHub-hosted CI](https://github.com/Prathampthk/StreamForge/actions/runs/42434743569) passed all six jobs on source commit `9b3a6c97ec5721c2fe98f177dda86920a763ee13`: contracts/race/static/vulnerability checks, binary reproducibility, fresh real-service integration and database privileges, infrastructure, and all four application image security gates. The ingest job also passed independent runtime image reproducibility. The hosted integration suite completed in 78.116s; its disposable privilege check also passed. This report-only follow-up does not change that tested source.
 
 ## Failures found and corrected
 
 - A fresh isolated suite exposed asynchronous Kafka leader availability immediately after CreateTopics. The test now waits for actual readiness rather than expecting immediate metadata propagation. The production readiness contract was not weakened.
 - Initial IaC validation caught resource-shape/type errors; native HCL plus the pinned provider and safety tests now validate. A scanner representation issue on equivalent Terraform JSON nested blocks was resolved by native HCL, not by ignoring ECR scan-on-push findings. Customer-KMS artifact encryption addressed the substantive bucket finding.
-- Independent image builds first differed in the CA-layer filesystem timestamps although their binary layers matched. Explicit timestamp rewriting and normalized build timestamps made image identities match; reproducibility is scoped to the documented compiler/platform/epoch/provenance settings.
+- Independent image builds first differed in the CA-layer filesystem timestamps although their binary layers matched. Local timestamp rewriting initially passed, but the hosted Docker exporter still differed. Normalizing every runtime file/directory and selecting a digest-pinned BuildKit container exporter fixed the hosted paired build too; reproducibility is scoped to the documented compiler/platform/epoch/provenance settings.
 - Isolated database setup first hit temporary-init-server/default-database assumptions; readiness now waits for the final daemon and applies migrations to the intended database. The check then exposed invalid multi-table GRANT syntax and legacy MV invoker source-read requirements. Cloud bootstrap now uses separate grants and explicit trusted DEFINER execution, keeping consumer raw reads denied. Existing benchmark schemas were not modified.
 - An attempt to target existing benchmark data for privilege testing was rejected by automatic approval review. It was replaced by a disposable tmpfs server; no benchmark-volume write was executed and no action remains blocked by that rejection.
 
@@ -53,3 +53,70 @@ The growing canonical-refresh bottleneck remains unresolved: the historical loca
 ## Handoff
 
 The offline package is ready for review. No later AWS action is implied by this report. When the user chooses to leave offline mode, first select/connect an authenticated account/profile/region, prepare the real read-only plan and current cost quote, then request separate approval for its exact external actions. See [deployment](aws/deployment.md), [teardown](aws/teardown.md), [architecture](final-architecture.md) and [resume evidence](resume-evidence.md).
+
+## Files changed in the offline Phase 6 preparation
+
+- `.dockerignore`
+- `.github/workflows/ci.yml`
+- `.github/workflows/release.yml`
+- `.gitignore`
+- `.go-version`
+- `Makefile`
+- `README.md`
+- `deploy/compose.ci.yaml`
+- `deploy/compose.consumer.yaml`
+- `deploy/docker/consumer.Dockerfile`
+- `deploy/docker/ingest.Dockerfile`
+- `deploy/docker/query.Dockerfile`
+- `deploy/docker/tools.Dockerfile`
+- `deploy/vendor-images.json`
+- `docs/adr/008-aws-deployment.md`
+- `docs/aws/costs.md`
+- `docs/aws/deployment.md`
+- `docs/aws/teardown.md`
+- `docs/evidence/phase-6-offline.json`
+- `docs/final-architecture.md`
+- `docs/phase-6-report.md`
+- `docs/resume-evidence.md`
+- `go.mod`
+- `go.sum`
+- `infra/terraform/bootstrap/.terraform.lock.hcl`
+- `infra/terraform/bootstrap/main.tf`
+- `infra/terraform/envs/dev/.terraform.lock.hcl`
+- `infra/terraform/envs/dev/backend.tf.example`
+- `infra/terraform/envs/dev/deployment.tfvars.json.example`
+- `infra/terraform/envs/dev/main.tf`
+- `infra/terraform/envs/dev/tests/safety.tftest.hcl`
+- `infra/terraform/modules/ecs-services/main.tf`
+- `infra/terraform/modules/network/main.tf`
+- `infra/terraform/modules/registry/main.tf`
+- `infra/terraform/modules/security/main.tf`
+- `infra/terraform/modules/stateful/main.tf`
+- `infra/terraform/modules/stateful/user-data.sh.tftpl`
+- `internal/analytics/read.go`
+- `internal/analytics/sink.go`
+- `internal/broker/consumer.go`
+- `internal/broker/producer.go`
+- `internal/broker/security.go`
+- `internal/broker/security_test.go`
+- `internal/config/consumer.go`
+- `internal/config/query.go`
+- `internal/metadata/store.go`
+- `internal/platform/tls.go`
+- `internal/platform/tls_test.go`
+- `internal/replay/quarantine.go`
+- `internal/replay/runner.go`
+- `scripts/aws/check-db-grants.py`
+- `scripts/aws/check-publish-environment.py`
+- `scripts/aws/check-render.py`
+- `scripts/aws/plan.sh`
+- `scripts/aws/prepare-secrets.py`
+- `scripts/aws/publish-images.py`
+- `scripts/aws/stateful.py`
+- `scripts/aws/upload-secrets.py`
+- `scripts/go.sh`
+- `scripts/integration-isolated.sh`
+- `scripts/reproducible-image.sh`
+- `scripts/reproducible.sh`
+- `scripts/terraform.sh`
+- `tests/integration/ingest_test.go`

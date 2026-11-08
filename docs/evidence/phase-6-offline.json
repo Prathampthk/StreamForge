@@ -7,7 +7,7 @@
   "reachable_go_vulnerabilities": 0,
   "ingest_image_high_critical_findings": 0,
   "private_iac_high_critical_findings": 0,
-  "paired_ingest_image_id": "sha256:571ba869fde49b317768b4d3a1adb92c9af46d1c9ffac4564be38663b1638502",
+  "paired_ingest_image_id": "sha256:1f62a12ba2a9004aa8c9bd3c0505b1dfd21b751bc666cbb4f3b4fb9309ccaf93",
   "binary_reproducibility": [
     "ingest-api",
     "consumer",
@@ -18,5 +18,18 @@
   "isolated_clickhouse_grants": "pass",
   "aws_authenticated_plan": "not run",
   "aws_live_checks": "not run",
-  "github_hosted_ci": "pending preparation push"
+  "github_hosted_ci": "success",
+  "final_local_integration_seconds": 85.368,
+  "final_local_integration": "pass",
+  "preparation_commit": "9b3a6c97ec5721c2fe98f177dda86920a763ee13",
+  "github_ci_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42434743569",
+  "github_ci_jobs": {
+    "checks": "success",
+    "infrastructure": "success",
+    "images (ingest)": "success",
+    "images (consumer)": "success",
+    "images (query)": "success",
+    "images (tools)": "success"
+  },
+  "github_integration_seconds": 78.116
 }
