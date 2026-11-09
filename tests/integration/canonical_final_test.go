@@ -87,6 +87,26 @@ func TestCanonicalFinalAcrossUnmergedParts(t *testing.T) {
 		changed[i] = string(value)
 	}
 	insert([]int{0, 1, 2, 3, 4}, changed)
+	// Exercise named-tuple extraction's defaults independently of payload
+	// equality: absent/null optional fields, Int64 bounds and nanosecond UTC.
+	fieldCases := []struct {
+		extra string
+		kind  string
+		want  string
+	}{
+		{``, "page_view", "0\t\t0"},
+		{`,"amount_cents":null,"currency":null,"status_code":null`, "page_view", "0\t\t0"},
+		{`,"status_code":503`, "api_request", "0\t\t503"},
+		{`,"amount_cents":9223372036854775807,"currency":"USD","status_code":null`, "purchase", "9223372036854775807\tUSD\t0"},
+	}
+	fieldIDs := make([]string, len(fieldCases))
+	for i, tc := range fieldCases {
+		fieldIDs[i] = uuid.NewString()
+		payload := fmt.Sprintf(`{"event_id":"%s","tenant_id":"fields","user_id":"user","event_type":"%s","occurred_at":"2026-11-07T13:00:00.123456789+01:00"%s}`, fieldIDs[i], tc.kind, tc.extra)
+		encoded := "unhex('" + hex.EncodeToString([]byte(payload)) + "')"
+		query(fmt.Sprintf("INSERT INTO %s.event_identity_values SELECT toUUID('%s'),%s,%s", db, fieldIDs[i], encoded, encoded))
+	}
+
 	check := func() {
 		original := "SELECT event_id,min(payload_min) AS payload,max(payload_max) AS last_payload FROM " + db + ".event_identity_values GROUP BY event_id HAVING payload=last_payload"
 		expected := query("SELECT toString(event_id),payload FROM (" + original + ") ORDER BY event_id FORMAT TabSeparatedRaw")
@@ -94,6 +114,14 @@ func TestCanonicalFinalAcrossUnmergedParts(t *testing.T) {
 		if got != expected {
 			t.Fatalf("exact canonical payloads differ\ngot %s\nwant %s", got, expected)
 		}
+		for i, tc := range fieldCases {
+			got := query("SELECT tenant_id,user_id,event_type,toString(occurred_at),amount_cents,currency,status_code FROM " + db + ".events_canonical WHERE event_id='" + fieldIDs[i] + "'")
+			want := "fields\tuser\t" + tc.kind + "\t2026-11-07 12:00:00.123456789\t" + tc.want
+			if got != want {
+				t.Fatalf("decoded field case %d: got %q want %q", i, got, want)
+			}
+		}
+
 		if got := query("SELECT count() FROM " + db + ".event_identity_conflicts"); got != "5" {
 			t.Fatalf("conflicts=%s", got)
 		}

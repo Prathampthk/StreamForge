@@ -156,16 +156,20 @@ func TestQueryGoldenLateEventsAndIsolation(t *testing.T) {
 		return len(rows) == 4 && rows[0].Cents == "137" && rows[0].Purchases == 1 && rows[1].Cents == "0"
 	})
 	status, body := get("revenue", "EUR", tenant)
-	if status != 200 {
-		t.Fatalf("EUR status %d", status)
-	}
 	var revenue []analytics.Revenue
-	if err := json.Unmarshal(body["data"], &revenue); err != nil {
-		t.Fatal(err)
-	}
-	if revenue[0].Cents != "0" || revenue[1].Cents != "250" || revenue[2].Cents != "0" {
-		t.Fatal(revenue)
-	}
+	// Separate identity shards converge independently. USD visibility does not
+	// promise that the EUR shard has included the same newly inserted batch.
+	eventually(t, 15*time.Second, "independent EUR shard snapshot catches up", func() bool {
+		status, body = get("revenue", "EUR", tenant)
+		if status != 200 {
+			return false
+		}
+		if err := json.Unmarshal(body["data"], &revenue); err != nil {
+			t.Fatal(err)
+		}
+		return len(revenue) == 4 && revenue[0].Cents == "0" && revenue[1].Cents == "250" && revenue[2].Cents == "0"
+	})
+
 	eventually(t, 20*time.Second, "independent traffic snapshot catches up", func() bool {
 		status, body := get("traffic", "", tenant)
 		if status != 200 {
