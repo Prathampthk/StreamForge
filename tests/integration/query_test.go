@@ -295,6 +295,20 @@ func TestQueryRejectsStoppedRefreshAndDatabaseOutage(t *testing.T) {
 		t.Fatalf("stopped refresh returned %d %s", response.Code, response.Body.String())
 	}
 	queryCH(t, sinkSettings, "SYSTEM START VIEW revenue_1m_refresh")
+	eventually(t, 20*time.Second, "partitioned refresh healthy before negative shard check", func() bool {
+		refresh, err := repository.Refresh(context.Background(), "revenue")
+		return err == nil && refresh.Failed == 0 && refresh.Status != "Disabled"
+	})
+	queryCH(t, sinkSettings, "SYSTEM STOP VIEW identity_metrics_00_refresh")
+	defer queryCH(t, sinkSettings, "SYSTEM START VIEW identity_metrics_00_refresh")
+	eventually(t, 20*time.Second, "stopped source shard is rejected independently of wrapper age", func() bool {
+		refresh, err := repository.Refresh(context.Background(), "revenue")
+		return err == nil && refresh.Failed != 0
+	})
+	if response := run(handler); response.Code != 503 || !strings.Contains(response.Body.String(), "snapshot_unavailable") {
+		t.Fatalf("stopped source shard returned %d %s", response.Code, response.Body.String())
+	}
+	queryCH(t, sinkSettings, "SYSTEM START VIEW identity_metrics_00_refresh")
 	c.ClickHouseURL = "http://127.0.0.1:1"
 	failedRepository := analytics.NewReadRepository(c, telemetry.NewQueryMetrics(), telemetry.Tracer(provider))
 	defer failedRepository.Close()
@@ -302,5 +316,5 @@ func TestQueryRejectsStoppedRefreshAndDatabaseOutage(t *testing.T) {
 	if response := run(failed); response.Code != 503 {
 		t.Fatal("unavailable database returned success")
 	}
-	t.Log("real stopped refresh and unreachable database both reject queries with 503; refresh restarted")
+	t.Log("real stopped wrapper/source shard and unreachable database reject queries with 503; refreshes restarted")
 }
