@@ -20,3 +20,5 @@ Native database backups also do not constitute a backup of Compose files, servic
 ## Recorded local result
 
 The November 9 rehearsal passed in **57.286s**: 67 raw rows, 63 canonical identities, one conflicted identity and 2,079 revenue cents were recovered exactly, along with traffic and ledger rows. PostgreSQL restored metadata, original ownership and reader grants while denying API-key access. See [machine-readable evidence](evidence/backup-restore.json). The elapsed time covers this tiny two-database fixture, not production RTO. Earlier harness attempts corrected process readiness checks, stopped-view waiting and tmpfs archive transfer; no failed attempt was reported as a pass.
+
+[Hosted CI](https://github.com/Prathampthk/StreamForge/actions/runs/42668354114) passed all six jobs on `3298ede9854510e496614aed3f7dd1ba860c0769`, including the new native recovery rehearsal.

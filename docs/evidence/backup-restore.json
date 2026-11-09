@@ -34,5 +34,8 @@
     "source_volume_removed_before_restore": true
   },
   "success": true,
-  "elapsed_seconds": 57.286
+  "elapsed_seconds": 57.286,
+  "github_ci": "success",
+  "github_ci_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42668354114",
+  "source_commit": "3298ede9854510e496614aed3f7dd1ba860c0769"
 }
