@@ -20,6 +20,6 @@ with (a.directory/'resources.jsonl').open('w') as stream:
   sample=dict(at=datetime.now(timezone.utc).isoformat())
   result=subprocess.run(['docker','stats','--no-stream','--format','{{json .}}','streamforge-clickhouse-1','streamforge-kafka-1','streamforge-consumer-1','streamforge-bench-ingest-1','streamforge-bench-query-1'],text=True,capture_output=True,timeout=10)
   sample['containers']=[json.loads(row) for row in result.stdout.splitlines() if row.startswith('{')]
-  try:sample['refresh']=client.query("SELECT view,status,toUnixTimestamp(last_success_time) AS last_success,toUInt8(exception!='') AS failed FROM system.view_refreshes WHERE database='streamforge'",{})
+  try:sample['refresh']=client.query("SELECT view,status,toUnixTimestamp(addMilliseconds(last_success_time,last_success_duration_ms)) AS last_success,toUnixTimestamp(last_success_time) AS last_success_start,last_success_duration_ms,toUInt8(exception!='') AS failed FROM system.view_refreshes WHERE database='streamforge'",{})
   except Exception as error:sample['refresh_error']=type(error).__name__
   stream.write(json.dumps(sample)+'\n');stream.flush();time.sleep(min(5,max(0,deadline-time.monotonic())))

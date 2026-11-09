@@ -9,6 +9,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"streamforge/internal/domain"
+	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -62,5 +65,66 @@ func TestClientAcknowledgmentLatencyIncludesResponseBody(t *testing.T) {
 	}
 	if len(r.latency) != 1 || r.latency[0] < .09 {
 		t.Fatalf("body wait omitted: %v", r.latency)
+	}
+}
+
+func TestQueryWorkloadsCoverBothEndpointsWindowsAndFailures(t *testing.T) {
+	seen := map[string]int{}
+	var seenMu sync.Mutex
+	var failRevenue atomic.Bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		values := request.URL.Query()
+		from, err := time.Parse(time.RFC3339, values.Get("from"))
+		if err != nil {
+			t.Error(err)
+		}
+		to, err := time.Parse(time.RFC3339, values.Get("to"))
+		if err != nil {
+			t.Error(err)
+		}
+		if values.Get("tenant_id") != "query_fixture" || request.Header.Get("Authorization") != "Bearer query_key" {
+			t.Error("missing query tenant/authentication")
+		}
+		seenMu.Lock()
+		seen[request.URL.Path+":"+values.Get("currency")+":"+to.Sub(from).String()]++
+		seenMu.Unlock()
+		if failRevenue.Load() && strings.HasSuffix(request.URL.Path, "/revenue") {
+			http.Error(w, "unavailable", 503)
+			return
+		}
+		_, _ = w.Write([]byte(`{"data":[]}`))
+	}))
+	defer server.Close()
+	r := &run{client: server.Client(), query: server.URL, queryKey: "query_key", tenant: "query_fixture"}
+	for caller := range 2 {
+		for sequence := range 4 {
+			r.sampleQuery(context.Background(), caller, sequence)
+		}
+	}
+	seenMu.Lock()
+	observed := make(map[string]int, len(seen))
+	for key, value := range seen {
+		observed[key] = value
+	}
+	seenMu.Unlock()
+
+	if len(observed) != 6 || len(r.queryWorkloads) != 6 || r.queryCount != 8 || r.queryErrors != 0 {
+		t.Fatalf("incomplete workload coverage: seen=%v stats=%v", observed, r.queryWorkloads)
+	}
+	for _, window := range []string{"15m0s", "24h0m0s"} {
+		for _, currency := range []string{"USD", "EUR"} {
+			if observed["/v1/metrics/revenue:"+currency+":"+window] != 1 {
+				t.Fatalf("missing revenue currency/window %s/%s", currency, window)
+			}
+		}
+		if observed["/v1/metrics/traffic::"+window] != 2 {
+			t.Fatalf("missing traffic window %s", window)
+		}
+	}
+	failRevenue.Store(true)
+	r.sampleQuery(context.Background(), 0, 1)
+	stats := r.queryWorkloads["revenue_USD_15m"]
+	if stats.Requests != 2 || stats.Errors != 1 || len(stats.Latencies) != 1 || r.queryErrors != 1 || len(r.queryLatency) != 8 {
+		t.Fatalf("failed request contaminated successful latency: %+v", stats)
 	}
 }

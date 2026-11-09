@@ -41,7 +41,7 @@ except Exception:query_baseline_status=0
 directory=Path('load/results/raw')/a.name
 if directory.exists():p.error('result directory already exists; choose a new name')
 directory.mkdir(parents=True)
-spec=dict(recorded_at=datetime.now(timezone.utc).isoformat(),platform=platform.platform(),tenant=tenant,offered_rate=a.rate,duration=a.duration,query_concurrency=2,query_windows=['15m','24h'],history_seed_events=1440,all_components_share_host=True,consumer_replicas=1,consumer_batch_records=1000,consumer_workers=4,kafka_partitions=12,kafka_replication_factor=1,compression='lz4',acks='all',producer_idempotence=True,trace_root_sample_ratio_for_benchmark_endpoints=0)
+spec=dict(recorded_at=datetime.now(timezone.utc).isoformat(),platform=platform.platform(),tenant=tenant,offered_rate=a.rate,duration=a.duration,query_concurrency=2,query_windows=['15m','24h'],query_endpoints=['traffic','revenue'],query_revenue_currencies=['USD','EUR'],query_schedule='per-window caller alternates traffic and revenue; USD/EUR alternate',history_seed_events=1440,all_components_share_host=True,consumer_replicas=1,consumer_batch_records=1000,consumer_workers=4,kafka_partitions=12,kafka_replication_factor=1,compression='lz4',acks='all',producer_idempotence=True,trace_root_sample_ratio_for_benchmark_endpoints=0)
 for key,command in {'host_cpu':['sysctl','-n','machdep.cpu.brand_string'],'host_cores':['sysctl','-n','hw.ncpu'],'host_memory_bytes':['sysctl','-n','hw.memsize'],'docker':['docker','info','--format','cpus={{.NCPU}} memory={{.MemTotal}}'],'disk_free':['df','-h','.']}.items():spec[key]=subprocess.check_output(command,text=True).strip()
 spec['allow_unready_query']=a.allow_unready_query
 spec['initial_query_ready_http_status']=query_baseline_status

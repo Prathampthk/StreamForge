@@ -39,6 +39,11 @@ type task struct {
 	Start uint64
 	Count int
 }
+type queryWorkload struct {
+	Kind, Currency, Window string
+	Requests, Errors       int
+	Latencies              []float64
+}
 type run struct {
 	mu                                                             sync.Mutex
 	client                                                         *http.Client
@@ -50,6 +55,7 @@ type run struct {
 	accepted, steady, attempted, rejected, unknown, dropped        int64
 	latency, queryLatency, freshness                               []float64
 	queryErrors, queryCount, probeErrors, probeCount, probeDropped int
+	queryWorkloads                                                 map[string]*queryWorkload
 	seconds                                                        map[int64]int64
 	acceptedFile, attemptFile                                      *os.File
 	writer, attemptWriter                                          *bufio.Writer
@@ -210,6 +216,47 @@ func (r *run) get(ctx context.Context, kind, currency string, from, to time.Time
 	}
 	return raw, nil
 }
+
+// Each of two callers keeps its own window and cycles traffic/USD/EUR.
+// Successful latency distributions never absorb failed requests.
+func (r *run) sampleQuery(ctx context.Context, caller, sequence int) {
+	window, label := 15*time.Minute, "15m"
+	if caller == 1 {
+		window, label = 24*time.Hour, "24h"
+	}
+	kind, currency := "traffic", ""
+	if sequence%2 == 1 {
+		kind, currency = "revenue", "USD"
+		if sequence%4 == 3 {
+			currency = "EUR"
+		}
+	}
+	end := time.Now().UTC().Truncate(time.Minute).Add(time.Minute)
+	began := time.Now()
+	_, err := r.get(ctx, kind, currency, end.Add(-window), end)
+	elapsed := time.Since(began).Seconds()
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.queryWorkloads == nil {
+		r.queryWorkloads = make(map[string]*queryWorkload)
+	}
+	key := kind + "_" + currency + "_" + label
+	stats := r.queryWorkloads[key]
+	if stats == nil {
+		stats = &queryWorkload{Kind: kind, Currency: currency, Window: label}
+		r.queryWorkloads[key] = stats
+	}
+	stats.Requests++
+	r.queryCount++
+	if err != nil {
+		stats.Errors++
+		r.queryErrors++
+	} else {
+		stats.Latencies = append(stats.Latencies, elapsed)
+		r.queryLatency = append(r.queryLatency, elapsed)
+	}
+}
+
 func quantile(values []float64, q float64) any {
 	if len(values) == 0 {
 		return nil
@@ -448,23 +495,8 @@ func execute() error {
 		auxiliaries.Add(1)
 		go func(index int) {
 			defer auxiliaries.Done()
-			for queryCtx.Err() == nil {
-				end := time.Now().UTC().Truncate(time.Minute).Add(time.Minute)
-				window := 15 * time.Minute
-				if index == 1 {
-					window = 24 * time.Hour
-				}
-				start := time.Now()
-				_, err := r.get(queryCtx, "traffic", "", end.Add(-window), end)
-				elapsed := time.Since(start).Seconds()
-				r.mu.Lock()
-				r.queryCount++
-				if err != nil {
-					r.queryErrors++
-				} else {
-					r.queryLatency = append(r.queryLatency, elapsed)
-				}
-				r.mu.Unlock()
+			for sequence := 0; queryCtx.Err() == nil; sequence++ {
+				r.sampleQuery(queryCtx, index, sequence)
 				select {
 				case <-queryCtx.Done():
 				case <-time.After(100 * time.Millisecond):
@@ -581,7 +613,14 @@ func execute() error {
 	for i := int64(0); i < int64(duration.Seconds()); i++ {
 		samples = append(samples, map[string]any{"second": i, "acknowledged_events": r.seconds[i]})
 	}
-	summary := map[string]any{"run_id": runID.String(), "tenant": r.tenant, "seed": *seed, "started_at": r.started, "duration_seconds": duration.Seconds(), "offered_events": total, "attempted_steady_events": r.attempted, "accepted_all_stages": r.accepted, "accepted_in_steady_interval": r.steady, "accepted_events_per_second": float64(r.steady) / duration.Seconds(), "rejected_events_all_stages": r.rejected, "unknown_events_all_stages": r.unknown, "driver_dropped_events": r.dropped, "client_ack_p50_seconds": quantile(r.latency, .5), "client_ack_p95_seconds": quantile(r.latency, .95), "client_ack_p99_seconds": quantile(r.latency, .99), "server_ack_p95_bucket_upper_seconds": upper, "server_ack_p95_histogram_estimate_seconds": serverEstimate, "query_concurrency": 2, "query_count": r.queryCount, "query_errors": r.queryErrors, "query_p95_seconds": quantile(r.queryLatency, .95), "freshness_poll_seconds": .1, "freshness_timeout_seconds": 30, "freshness_samples": r.probeCount, "freshness_censored_or_failed": r.probeErrors, "freshness_driver_dropped": r.probeDropped, "freshness_success_p50_seconds": quantile(r.freshness, .5), "freshness_success_p95_seconds": quantile(r.freshness, .95), "freshness_success_p99_seconds": quantile(r.freshness, .99), "freshness_success_max_seconds": quantile(r.freshness, 1), "per_second": samples}
+	queryResults := map[string]any{}
+	for key, stats := range r.queryWorkloads {
+		queryResults[key] = map[string]any{"kind": stats.Kind, "currency": stats.Currency, "window": stats.Window,
+			"requests": stats.Requests, "errors": stats.Errors,
+			"success_p50_seconds": quantile(stats.Latencies, .5), "success_p95_seconds": quantile(stats.Latencies, .95), "success_p99_seconds": quantile(stats.Latencies, .99)}
+	}
+
+	summary := map[string]any{"run_id": runID.String(), "tenant": r.tenant, "seed": *seed, "started_at": r.started, "duration_seconds": duration.Seconds(), "offered_events": total, "attempted_steady_events": r.attempted, "accepted_all_stages": r.accepted, "accepted_in_steady_interval": r.steady, "accepted_events_per_second": float64(r.steady) / duration.Seconds(), "rejected_events_all_stages": r.rejected, "unknown_events_all_stages": r.unknown, "driver_dropped_events": r.dropped, "client_ack_p50_seconds": quantile(r.latency, .5), "client_ack_p95_seconds": quantile(r.latency, .95), "client_ack_p99_seconds": quantile(r.latency, .99), "server_ack_p95_bucket_upper_seconds": upper, "server_ack_p95_histogram_estimate_seconds": serverEstimate, "query_concurrency": 2, "query_count": r.queryCount, "query_errors": r.queryErrors, "query_p95_seconds": quantile(r.queryLatency, .95), "query_workloads": queryResults, "freshness_poll_seconds": .1, "freshness_timeout_seconds": 30, "freshness_samples": r.probeCount, "freshness_censored_or_failed": r.probeErrors, "freshness_driver_dropped": r.probeDropped, "freshness_success_p50_seconds": quantile(r.freshness, .5), "freshness_success_p95_seconds": quantile(r.freshness, .95), "freshness_success_p99_seconds": quantile(r.freshness, .99), "freshness_success_max_seconds": quantile(r.freshness, 1), "per_second": samples}
 	raw, err := json.MarshalIndent(summary, "", "  ")
 	if err != nil {
 		return err

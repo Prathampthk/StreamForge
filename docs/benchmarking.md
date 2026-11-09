@@ -21,3 +21,9 @@ The wrapper's new run-owned tenant reserves historical JPY probe minutes by cons
 The fresh-run audit used `--chunk-size 2000` after checking every expected ID/hash in a real 2000-ID query. A 5000-ID attempt exceeded ClickHouse HTTP form-field length and is preserved as a failed harness attempt; it supplies no loss evidence. The CLI now rejects chunks above 2000.
 
 For post-load correctness isolation, `--pause-refresh` pauses both refresh jobs only during canonical-ID reads and always restarts them before final metric reads. It does not alter or qualify benchmark latency/freshness. Read failures get at most three attempts with bounded backoff; retries and remaining unverified chunks are counted and preserved. Use this only after load has stopped, never during a performance interval.
+
+## Current query workload after the readiness remediation
+
+The next eventgen profile keeps two concurrent callers, one per 15-minute/24-hour window, and alternates traffic queries with USD/EUR revenue queries. `query_workloads` reports requests, errors and successful p50/p95/p99 separately for each endpoint/currency/window; aggregate query counters remain available. Failed calls are never added as successful latency samples. HTTP-level tests verify the six workload combinations and failed-call accounting.
+
+Earlier Phase 5 steady runs used two traffic callers and revenue visibility probes. Do not retroactively label them as this mixed endpoint workload or compare timings as a controlled optimization. Resource samples now record successful refresh start, duration and derived completion separately. Snapshot completion age is not event freshness or a Kafka processed watermark. Keep the original five-second freshness target and all failed/censored probes.
