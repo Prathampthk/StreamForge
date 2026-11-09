@@ -1,4 +1,8 @@
 <clickhouse>
+    <!-- Correct allocation-counter drift from container RSS accounting.
+         Container and per-query hard limits remain unchanged. -->
+    <memory_worker_use_cgroup>true</memory_worker_use_cgroup>
+    <memory_worker_correct_memory_tracker>true</memory_worker_correct_memory_tracker>
     <mark_cache_size>134217728</mark_cache_size>
     <uncompressed_cache_size>67108864</uncompressed_cache_size>
     <background_pool_size>4</background_pool_size>

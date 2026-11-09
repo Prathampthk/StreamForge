@@ -31,6 +31,10 @@ try:
   if ready.returncode==0 and main.stdout.strip().startswith('clickhouse'):break
   time.sleep(1)
  else:raise RuntimeError('disposable server never became ready')
+ profile={row['name']:row['value'] for row in map(json.loads,sql("SELECT name,value FROM system.server_settings WHERE name IN ('max_server_memory_usage','memory_worker_use_cgroup','memory_worker_correct_memory_tracker') FORMAT JSONEachRow").splitlines())}
+ if not 0<int(profile['max_server_memory_usage'])<=int((1<<30)*.9):raise RuntimeError('automatic server memory limit escaped the 1 GiB fixture cap')
+ if profile['memory_worker_use_cgroup']!='1' or profile['memory_worker_correct_memory_tracker']!='1':raise RuntimeError('container drift correction profile not loaded')
+ print('PASS container-accounted drift correction; automatic server limit <=90% of 1 GiB')
  for file in sorted(Path('migrations/clickhouse').glob('*.sql')):
   subprocess.run(['docker','exec','-i',name,'clickhouse-client','--config-file','/tmp/check-client.xml','--multiquery','--database','streamforge'],input=file.read_bytes(),check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  for view in ['revenue_1m_mv','traffic_1m_mv','event_identity_values_mv']:sql('ALTER TABLE '+view+' MODIFY SQL SECURITY DEFINER DEFINER=CURRENT_USER')
