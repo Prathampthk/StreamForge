@@ -1,17 +1,17 @@
 {
   "migration_004_retained_applied": true,
-  "retained_refresh_recovery": "failed",
+  "retained_refresh_recovery": "not passed: intermittent global memory pressure",
   "legacy_identity_physical_rows_observed": 15871565,
   "raw_rows_observed": 16231980,
   "new_storage_integration": "pass",
   "new_storage_integration_seconds": 82.886,
   "disposable_migration_test": "pass: exact 64 identities, guard, dual write, checkpoint, cutover, conflict, evidence preservation and repeats",
-  "retained_005_006": "not run: approval review requires explicit authorization",
-  "new_concurrent_benchmark": "not started",
+  "retained_005_006": "pass: explicitly approved local exact-string backfill and cutover",
+  "new_concurrent_benchmark": "not started: healthy-start gate unmet",
   "aws_authenticated_operations": "not run",
   "github_ci": "success",
-  "github_ci_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42450557963",
-  "source_commit": "076e26b381ea619f4b6763207f7aa6468a3d2b7f",
+  "github_ci_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42664828534",
+  "source_commit": "caba1e8d799627c4fc798798b193e940023a6371",
   "github_ci_jobs": {
     "checks": "success",
     "infrastructure": "success",
@@ -20,5 +20,11 @@
     "images (query)": "success",
     "images (tools)": "success"
   },
-  "corrected_random_fixture": "pass at 10000 identities; legacy schema 001-004 only"
+  "corrected_random_fixture": "pass at 10000 identities; legacy schema 001-004 only",
+  "retained_verified_ids": 15871442,
+  "retained_verified_ranges": 3899,
+  "retained_canonical_ids": 15871426,
+  "retained_conflicts": 16,
+  "retained_source_target_cardinality_equal": true,
+  "migration_007": "applied; aggregate count matches, sustained readiness still fails intermittently"
 }

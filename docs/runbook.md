@@ -13,7 +13,13 @@
 
 The Phase 5 growing-history experiment recorded memory-limit errors during full canonical recomputation. Old snapshots remain intact but are rejected as stale by the query API. More ingestion or consumer replicas do not repair this read bottleneck. Keep receipt journals and source offsets, stop optional load generation, let consumers drain, and inspect actual exceptions/resource limits before changing settings. Do not replace canonical queries with duplicate-prone legacy append sums.
 
-Migration 003 is the adopted bounded profile: 256MiB/two threads per refresh, 64MiB external aggregation threshold; server caches 128/64MiB and ClickHouse cap 4GiB on the measured host. `load/ordered-refresh-experiment.sql` is a **failed** experiment, intentionally excluded from migrations. Larger memory budgets and ordered aggregation alone did not restore this dataset's health. Any structural fix must retain global identity conflicts, withdrawal of previous revenue/minute contributions, UTC bucketing and exact integer currency totals, then rerun correctness and sustained measurements.
+Use `scripts/migrate-clickhouse.sh` and its ledger. Retained legacy data requires the approved exact backfill before 006; never replay older canonical view definitions over a completed cutover. The retained installation records 1–7. Migration 007 uses sixteen 64MiB/one-thread source refreshes every four seconds, then sums compact caches into the two endpoint snapshots. Query readiness checks every source shard and wrapper. Container cap remains 4GiB and server caches 128/64MiB. These bounds have not established sustained retained-data health: intermittent global memory errors remain. Inspect fixed-size `system.merges`, `system.metrics`, `system.asynchronous_metrics` and `system.view_refreshes` fields; avoid scanning huge historical `system.query_log.query` strings during memory pressure.
+
+`load/ordered-refresh-experiment.sql` and the allocator-accounting restart experiment both failed to restore this dataset's health. Preserve exact global identity conflicts, withdrawal, UTC bucketing and integer currency totals in further fixes. Pause legacy `event_identity_states` merges again after a restart if preserving its frozen diagnostic state; never reattach its write MV as a shortcut rollback after new writes. See [the remediation report](analytics-remediation-report.md) for measured results.
+
+## Backup and recovery
+
+Run the separate [disposable recovery rehearsal](backup-restore.md). It never restores over retained data. Keep configuration/credentials and Kafka retention/replay planning separate from database snapshots. The rehearsal is not a full retained-data backup or a production recovery-time result.
 
 ## Poison and replay
 

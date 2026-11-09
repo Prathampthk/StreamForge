@@ -23,6 +23,6 @@ Risks: dual-write/copy briefly adds IO and disk use; smaller granules add index 
 - New table's merge/read behavior measured on retained random-UUID layout and fresh integration tests.
 - Fresh benchmark only after readiness succeeds, retaining all errors and original benchmark results.
 
-Local checks passed: full integration 82.886s and disposable exact backfill/cutover/repeat/ledger checks. Retained-data execution was rejected by automatic approval review pending clearer explicit approval; it has not run. Rollback after subsequent writes requires reverse backfill from the new values, not merely reattaching the frozen legacy MV.
+Local checks passed: full integration 82.886s and disposable exact backfill/cutover/repeat/ledger checks. After explicit user approval, retained-data execution completed on November 9: 15,871,442 IDs and full min/max strings verified over 3,899 ranges, with equal source/target cardinality. Original raw and legacy tables remain. This proves the identity migration, not refresh performance. Rollback after subsequent writes requires reverse backfill from the new values, not merely reattaching the frozen legacy MV.
 
 Hosted CI passed all six jobs on `076e26b`; prepared code is reviewable at that commit. No hosted result constitutes a retained-database cutover or concurrent benchmark.

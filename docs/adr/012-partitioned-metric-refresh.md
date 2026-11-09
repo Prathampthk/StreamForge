@@ -24,3 +24,8 @@ Files: migration 007, query-health implementation/regression, this ADR and curre
 - Run the sustained concurrent benchmark only with a disclosed starting state and retain every query/freshness failure. Full-history work still grows; the sharding is a bounded-memory projection strategy, not incremental work or HA.
 
 Rollback changes only derived refresh definitions and query-health expectations; it does not delete or reverse the verified identity migration. Reverting to a known memory-failing full scan is not a performance recovery claim.
+
+
+## Retained rollout result
+
+Isolated integration passed in 115.502s. All sixteen retained caches have completed runs and the served traffic total matched 15,871,426 canonical events, but several sources still intermittently fail the 3.60 GiB server-wide memory limit. Wrapper/API health rejects these states. The new concurrent benchmark remains gated on readiness; no SLO pass follows from the exact total. Restarting with allocator-based tracking preserved data and limits but did not resolve failures; that configuration experiment was reverted.
