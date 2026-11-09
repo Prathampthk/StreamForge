@@ -15,3 +15,8 @@ This is a small recovery test, not a backup of the real retained dataset. It doe
 After restoring an older ClickHouse snapshot, the Kafka consumer's committed offsets may be ahead of restored data. Replay from a reviewed earlier offset or new group while Kafka still retains those records; canonical identity semantics handle repeated identical events. Kafka retention must cover the chosen restore point, or records need a separate durable archive. The base topic's seven-day retention is not a database backup. PostgreSQL metadata/audit and ClickHouse facts have no shared transaction or coordinated recovery point.
 
 Native database backups also do not constitute a backup of Compose files, service users/grants, TLS material, secret values, Kafka logs/metadata or runtime pause/detach state. Preserve configuration and restore those operational boundaries explicitly. A frozen legacy identity table requires reverse backfill before rollback after new traffic.
+
+
+## Recorded local result
+
+The November 9 rehearsal passed in **57.286s**: 67 raw rows, 63 canonical identities, one conflicted identity and 2,079 revenue cents were recovered exactly, along with traffic and ledger rows. PostgreSQL restored metadata, original ownership and reader grants while denying API-key access. See [machine-readable evidence](evidence/backup-restore.json). The elapsed time covers this tiny two-database fixture, not production RTO. Earlier harness attempts corrected process readiness checks, stopped-view waiting and tmpfs archive transfer; no failed attempt was reported as a pass.

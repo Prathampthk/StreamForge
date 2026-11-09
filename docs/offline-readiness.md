@@ -8,7 +8,7 @@ As of November 9, 2026. AWS setup is not required for any local task below. Exis
 | Bound business refresh work | Migration 007 applied; sixteen partition projections match the 15,871,426 canonical-event total. Sustained readiness still intermittently fails under global memory pressure. |
 | Query health and correctness | Isolated integration passed in 115.502s, including stopped-source-shard rejection, conflict withdrawal, currency/Int128 totals, replay and crash recovery. Hosted CI passed on caba1e8. |
 | Retained restart recovery | Ledger versions 1–7 and data survived restart. Allocator-accounting experiment did not recover sustained readiness and was reverted. Legacy table merges paused again. |
-| Native backup/restore | Disposable rehearsal implemented in `scripts/check-backup-restore.py`; requires a passing result before claiming recovery. See the separate recovery guide. |
+| Native backup/restore | Passed in 57.286s: source volumes removed; exact ClickHouse raw/identity/conflict/canonical/metric/ledger recovery, PostgreSQL metadata/owner/reader ACL recovery. Small fixture only; see the [recovery guide](backup-restore.md). |
 | Fresh 15-minute benchmark | Pending healthy analytics. Run with ingestion, concurrent queries and freshness probes; retain failures, accepted receipt audit and sleep checks. Do not bypass readiness to claim success. |
 | Consumer 1→3 scaling | Repeat after benchmark/audit, separately from steady load. Historical 1.91x fails the 2x target. |
 | Replicated Kafka failure drill | Still required: isolated three-broker RF3/minISR2 acknowledgment and broker-loss checks. Current RF1 base does not establish HA or replica-loss durability. |
