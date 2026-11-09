@@ -35,6 +35,43 @@ import (
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
+// exec.Cmd copies stderr concurrently with timeout diagnostics.
+// Keep both diagnostic streams safe to inspect before the child exits.
+type processOutput struct {
+	mu     sync.Mutex
+	buffer bytes.Buffer
+}
+
+func (b *processOutput) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buffer.Write(p)
+}
+func (b *processOutput) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buffer.String()
+}
+
+func TestProcessOutputConcurrentDiagnostics(t *testing.T) {
+	var output processOutput
+	var writers sync.WaitGroup
+	for range 4 {
+		writers.Add(1)
+		go func() {
+			defer writers.Done()
+			for range 100 {
+				_, _ = output.Write([]byte("x"))
+				_ = output.String()
+			}
+		}()
+	}
+	writers.Wait()
+	if got := len(output.String()); got != 400 {
+		t.Fatalf("lost diagnostic output: %d bytes", got)
+	}
+}
+
 func sinkConfig(t *testing.T) config.Consumer {
 	t.Helper()
 	c, err := config.ConsumerFromEnv(os.Getenv)
@@ -96,6 +133,25 @@ func source(t *testing.T, c config.Consumer) (*kgo.Client, string) {
 			t.Fatalf("create test topic: %+v", topic)
 		}
 	}
+	// CreateTopics may return before every partition leader is discoverable.
+	eventually(t, 5*time.Second, "consumer fixture topic leaders", func() bool {
+		metadata := kmsg.NewPtrMetadataRequest()
+		metadata.AllowAutoTopicCreation = false
+		metadata.Topics = []kmsg.MetadataRequestTopic{{Topic: &topic}}
+		requestCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		response, err := metadata.RequestWith(requestCtx, client)
+		if err != nil || len(response.Topics) != 1 || response.Topics[0].ErrorCode != 0 || len(response.Topics[0].Partitions) != 12 {
+			return false
+		}
+		for _, partition := range response.Topics[0].Partitions {
+			if partition.ErrorCode != 0 || partition.Leader < 0 || len(partition.ISR) == 0 {
+				return false
+			}
+		}
+		return true
+	})
+
 	t.Cleanup(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -378,7 +434,8 @@ func TestConsumerSIGKILLRecovery(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			var stderr bytes.Buffer
+			var stderr processOutput
+			var stdout processOutput
 			command.Stderr = &stderr
 			if err := command.Start(); err != nil {
 				t.Fatal(err)
@@ -400,6 +457,7 @@ func TestConsumerSIGKILLRecovery(t *testing.T) {
 				defer close(scanDone)
 				scanner := bufio.NewScanner(output)
 				for scanner.Scan() {
+					_, _ = stdout.Write([]byte(scanner.Text() + "\n"))
 					if strings.Contains(scanner.Text(), "FAILPOINT:"+childPoint) {
 						close(reached)
 						return
@@ -408,8 +466,14 @@ func TestConsumerSIGKILLRecovery(t *testing.T) {
 			}()
 			select {
 			case <-reached:
+			case <-scanDone:
+				select {
+				case <-reached:
+				default:
+					t.Fatalf("child exited before failpoint: stdout=%s stderr=%s", stdout.String(), stderr.String())
+				}
 			case <-time.After(20 * time.Second):
-				t.Fatalf("failpoint not reached: %s", stderr.String())
+				t.Fatalf("failpoint not reached: stdout=%s stderr=%s", stdout.String(), stderr.String())
 			}
 			if got := offset(t, c, topic, 0); got > records[0].Offset {
 				t.Fatalf("premature commit at %s: %d", point, got)

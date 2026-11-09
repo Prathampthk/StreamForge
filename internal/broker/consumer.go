@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math/rand/v2"
 	"sort"
 	"strconv"
 	"sync"
@@ -16,6 +17,7 @@ import (
 	"streamforge/internal/pipeline"
 	"streamforge/internal/telemetry"
 
+	"github.com/twmb/franz-go/pkg/kerr"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -26,16 +28,17 @@ type Quarantiner interface {
 }
 
 type Consumer struct {
-	quarantine Quarantiner
-	client     *kgo.Client
-	config     config.Consumer
-	processor  pipeline.Processor
-	metrics    *telemetry.ConsumerMetrics
-	tracer     trace.Tracer
-	logger     *slog.Logger
-	hook       pipeline.Hook
-	assigned   atomic.Int64
-	running    atomic.Bool
+	quarantine      Quarantiner
+	client          *kgo.Client
+	config          config.Consumer
+	processor       pipeline.Processor
+	metrics         *telemetry.ConsumerMetrics
+	tracer          trace.Tracer
+	logger          *slog.Logger
+	hook            pipeline.Hook
+	assigned        atomic.Int64
+	running         atomic.Bool
+	completedEpochs uint64 // Owned by Run; empty polls do not reset retry budgets.
 }
 
 func NewConsumer(c config.Consumer, sink pipeline.Sink, m *telemetry.ConsumerMetrics, t trace.Tracer, logger *slog.Logger, hook pipeline.Hook) (*Consumer, error) {
@@ -83,16 +86,78 @@ func (c *Consumer) Assigned() int64 { return c.assigned.Load() }
 func (c *Consumer) Running() bool   { return c.running.Load() }
 func (c *Consumer) Close()          { c.client.CloseAllowingRebalance() }
 
+// Only an empty poll with no records collected in this epoch may be retried
+// in-process. Restarting an epoch after discarding polled records could let a
+// later commit skip those records; every other failure remains fail-closed.
+type emptyFetchFailure struct{ cause error }
+
+func (e *emptyFetchFailure) Error() string { return e.cause.Error() }
+func (e *emptyFetchFailure) Unwrap() error { return e.cause }
+
+func transientMetadataError(err error) bool {
+	for _, candidate := range []error{kerr.NotCoordinator, kerr.CoordinatorNotAvailable, kerr.CoordinatorLoadInProgress, kerr.UnknownTopicOrPartition, kerr.LeaderNotAvailable, kerr.NotLeaderForPartition} {
+		if errors.Is(err, candidate) {
+			return true
+		}
+	}
+	return false
+}
+
+func fetchFailure(fetches kgo.Fetches, collected int) error {
+	var first error
+	retryable := true
+	for _, problem := range fetches.Errors() {
+		if errors.Is(problem.Err, context.DeadlineExceeded) || errors.Is(problem.Err, context.Canceled) {
+			continue
+		}
+		metadataError := transientMetadataError(problem.Err)
+		if first == nil || (retryable && !metadataError) {
+			first = fmt.Errorf("Kafka fetch %s/%d: %w", problem.Topic, problem.Partition, problem.Err)
+		}
+		retryable = retryable && metadataError
+	}
+	if first != nil && retryable && collected == 0 && fetches.NumRecords() == 0 {
+		return &emptyFetchFailure{cause: first}
+	}
+	return first
+}
+
 func (c *Consumer) Run(ctx context.Context) error {
 	c.running.Store(true)
 	defer c.running.Store(false)
+	retries := 0
+	var retryStart time.Time
 	for ctx.Err() == nil {
+		before := c.completedEpochs
 		if err := c.epoch(ctx); err != nil {
 			if ctx.Err() != nil {
 				return nil
 			}
 			c.metrics.Failures.Inc()
+			var empty *emptyFetchFailure
+			if errors.As(err, &empty) && retries < 3 {
+				if retries == 0 {
+					retryStart = time.Now()
+				}
+				if time.Since(retryStart) < c.config.RebalanceTimeout {
+					retries++
+					c.metrics.FetchRetries.Inc()
+					c.logger.Warn("retrying empty Kafka poll", "class", "transient_broker_metadata", "attempt", retries)
+					ceiling := 100 * time.Millisecond * time.Duration(1<<(retries-1))
+					timer := time.NewTimer(ceiling/2 + time.Duration(rand.Int64N(int64(ceiling/2))))
+					select {
+					case <-timer.C:
+						continue
+					case <-ctx.Done():
+						timer.Stop()
+						return nil
+					}
+				}
+			}
 			return err
+		}
+		if c.completedEpochs != before {
+			retries = 0
 		}
 	}
 	return nil
@@ -109,11 +174,8 @@ func (c *Consumer) epoch(ctx context.Context) error {
 	maxPoll := c.config.BatchRecords * c.config.Workers
 	for count < maxPoll && bufferedBytes < c.config.BatchBytes && collect.Err() == nil {
 		fetches := c.client.PollRecords(collect, maxPoll-count)
-		for _, problem := range fetches.Errors() {
-			if errors.Is(problem.Err, context.DeadlineExceeded) || errors.Is(problem.Err, context.Canceled) {
-				continue
-			}
-			return fmt.Errorf("Kafka fetch %s/%d: %w", problem.Topic, problem.Partition, problem.Err)
+		if err := fetchFailure(fetches, count); err != nil {
+			return err
 		}
 		fetches.EachPartition(func(p kgo.FetchTopicPartition) { highwater[p.Partition] = p.HighWatermark })
 		fetches.EachRecord(func(record *kgo.Record) {
@@ -183,6 +245,7 @@ func (c *Consumer) epoch(ctx context.Context) error {
 		if err := c.client.CommitRecords(commit, safe...); err != nil {
 			return fmt.Errorf("commit persisted partition offsets: %w", err)
 		}
+		c.completedEpochs++
 		for _, last := range safe {
 			label := strconv.Itoa(int(last.Partition))
 			c.metrics.Committed.WithLabelValues(label).Set(float64(last.Offset + 1))
