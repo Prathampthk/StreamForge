@@ -1,0 +1,9 @@
+# ADR 015: distinguish refresh start from snapshot completion
+
+Pinned 25.8 system.view_refreshes defines last_success_time as when the successful refresh started and exposes its duration separately. The previous API and source-cache guard treated that start as snapshot completion. After memory correction, sources completed successfully but could be rejected as older than ten seconds even when their latest completed snapshots were only one to eight seconds old.
+
+Compute the successful completion timestamp as addMilliseconds(last_success_time,last_success_duration_ms). Use the earliest completion across all source shards and the requested wrapper. Keep the same ten-second snapshot-age limit and continue rejecting missing metadata/durations, failed/disabled sources and stale snapshots. Migration 009 updates the wrapper source guards; the Go repository updates API health. Whole-second native start timestamps conservatively round completion age; this is not a Kafka processed watermark.
+
+This changes the prior conservative start-age policy to the intended completed-snapshot policy; it is disclosed rather than presented as faster processing. The separate p95 event freshness target remains below five seconds and is measured from Kafka acknowledgment to aggregate contribution, including failures/censored probes. A ready endpoint can still miss that performance target.
+
+A native ClickHouse metadata fixture executes the production API health SQL and the exact migration guard. It accepts a twelve-second-old start whose five-second refresh completed seven seconds ago, rejects stale completion, missing start/duration/source/wrapper, failures and disabled sources, and accepts a genuine zero-millisecond duration. No real refresh schedules are changed by the fixture. Existing stopped-source/wrapper and database-outage tests remain.

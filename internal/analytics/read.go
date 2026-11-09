@@ -63,11 +63,11 @@ func (r *ReadRepository) Refresh(ctx context.Context, kind string) (Refresh, err
 		return Refresh{}, errors.New("unknown metric kind")
 	}
 	raw, err := r.execute(ctx, "refresh_health", `SELECT wrapper.view AS name,wrapper.status AS status,
- if(shards.n=16,least(ifNull(toUnixTimestamp(wrapper.last_success_time),0),shards.oldest),toInt64(0)) AS last_success_unix,
+ if(shards.n=16,least(ifNull(toUnixTimestamp(addMilliseconds(wrapper.last_success_time,wrapper.last_success_duration_ms)),0),shards.oldest),toInt64(0)) AS last_success_unix,
  toUInt8(wrapper.exception!='' OR shards.n!=16 OR shards.bad>0) AS failed
  FROM system.view_refreshes AS wrapper
- CROSS JOIN (SELECT count() AS n,min(ifNull(toUnixTimestamp(last_success_time),0)) AS oldest,
- countIf(exception!='' OR status NOT IN ('Running','Scheduled') OR ifNull(toUnixTimestamp(last_success_time),0)=0) AS bad
+ CROSS JOIN (SELECT count() AS n,min(ifNull(toUnixTimestamp(addMilliseconds(last_success_time,last_success_duration_ms)),0)) AS oldest,
+ countIf(exception!='' OR status NOT IN ('Running','Scheduled') OR ifNull(toUnixTimestamp(addMilliseconds(last_success_time,last_success_duration_ms)),0)=0) AS bad
  FROM system.view_refreshes WHERE database={db:String} AND match(view,'^identity_metrics_[0-9]{2}_refresh$')) AS shards
  WHERE wrapper.database={db:String} AND wrapper.view={view:String} FORMAT JSONEachRow`, url.Values{"param_db": {"streamforge"}, "param_view": {view}})
 	if err != nil {
