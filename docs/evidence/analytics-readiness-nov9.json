@@ -1,0 +1,78 @@
+{
+  "scope": "retained-data diagnostics, not SLO acceptance",
+  "parsing_integration_seconds": 119.402,
+  "later_full_integration_seconds": 161.605,
+  "single_pass_native_plan_json_functions": 1,
+  "old_native_plan_json_functions": 6,
+  "tuple_only_health": {
+    "ready": 1,
+    "samples": 12
+  },
+  "tuple_and_counter_correction": {
+    "ready": 2,
+    "samples": 24,
+    "source_memory_error_observations": 0
+  },
+  "completed_age_trial_during_shared_test_work": {
+    "ready": 0,
+    "samples": 24,
+    "source_memory_error_observations": 0,
+    "source_timeouts_observed": true
+  },
+  "larger_block_trial": {
+    "ready": 1,
+    "samples": 12
+  },
+  "larger_block_single_partition": [
+    {
+      "rows_per_block": 128,
+      "buffer": 8192,
+      "query_id": "block_67cec626d634402485e575a04a26ba19",
+      "success": true,
+      "metric_rows": 1095,
+      "exact_metrics_equal": true,
+      "wall_seconds": 2.6289,
+      "native": {
+        "query_id": "block_67cec626d634402485e575a04a26ba19",
+        "query_duration_ms": 2309,
+        "memory_usage": 8590523,
+        "read_rows": 992254,
+        "read_bytes": 568326814
+      }
+    },
+    {
+      "rows_per_block": 1024,
+      "buffer": 65536,
+      "query_id": "block_821a471f897943e99ab1c6c64091bbdf",
+      "success": true,
+      "metric_rows": 1095,
+      "exact_metrics_equal": true,
+      "wall_seconds": 1.7373,
+      "native": {
+        "query_id": "block_821a471f897943e99ab1c6c64091bbdf",
+        "query_duration_ms": 1407,
+        "memory_usage": 8606918,
+        "read_rows": 992254,
+        "read_bytes": 568326814
+      }
+    },
+    {
+      "rows_per_block": 4096,
+      "buffer": 65536,
+      "query_id": "block_229f2b0234e544c1a2b54396f94f7d9c",
+      "success": true,
+      "metric_rows": 1095,
+      "exact_metrics_equal": true,
+      "wall_seconds": 1.8071,
+      "native": {
+        "query_id": "block_229f2b0234e544c1a2b54396f94f7d9c",
+        "query_duration_ms": 1313,
+        "memory_usage": 13278722,
+        "read_rows": 992254,
+        "read_bytes": 568326814
+      }
+    }
+  ],
+  "new_steady_benchmark": "not run: readiness gate unmet",
+  "aws_operations": false
+}
