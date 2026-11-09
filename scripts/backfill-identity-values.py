@@ -11,7 +11,7 @@ import uuid
 
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--project',default='streamforge')
-p.add_argument('--chunk',type=int,default=8192)
+p.add_argument('--chunk',type=int,default=4096)
 p.add_argument('--directory',type=Path,default=Path('load/results/raw/identity-values-backfill'))
 a=p.parse_args()
 if not 128<=a.chunk<=8192:p.error('chunk must be 128..8192')
@@ -27,7 +27,7 @@ endpoint=os.environ.get('DOCKER_HOST') or context['Endpoints']['docker']['Host']
 if not endpoint.startswith('unix://'):raise RuntimeError('this script requires a local Unix-socket Docker engine')
 consumer=a.project+'-consumer-1'
 running=subprocess.check_output(['docker','inspect','--format','{{.State.Running}}',consumer],text=True).strip()=='true'
-settings='max_threads=1,max_final_threads=1,max_block_size=1024,max_memory_usage=268435456,max_execution_time=30'
+settings='max_threads=1,max_final_threads=1,max_block_size=1024,max_read_buffer_size=65536,preferred_block_size_bytes=65536,max_memory_usage=268435456,max_execution_time=30'
 def sql(statement):
  r=subprocess.run(cmd,input=statement,text=True,capture_output=True,timeout=90)
  if r.returncode:raise RuntimeError(r.stderr[:1600])
@@ -67,7 +67,15 @@ try:
    body+=f"SELECT 'old' AS source,event_id,minMerge(payload_min) AS lo,maxMerge(payload_max) AS hi FROM event_identity_states WHERE {where} GROUP BY event_id ORDER BY event_id SETTINGS {settings} FORMAT JSONEachRow;\n"
    body+=f"SELECT 'new' AS source,event_id,payload_min AS lo,payload_max AS hi FROM event_identity_values FINAL WHERE {where} ORDER BY event_id SETTINGS {settings} FORMAT JSONEachRow;"
    old=[];new=[]
-   for line in sql(body).splitlines():
+   for attempt in range(3):
+    try:
+     response=sql(body);break
+    except RuntimeError as error:
+     if 'Code: 241.' not in str(error) or attempt==2:raise
+     state['transient_memory_retries']=state.get('transient_memory_retries',0)+1;save()
+     print(json.dumps({'memory_retry':attempt+1,'partition':partition}),flush=True)
+     sql('SYSTEM JEMALLOC PURGE;');time.sleep(2**attempt)
+   for line in response.splitlines():
     row=json.loads(line);side=row.pop('source');(old if side=='old' else new).append(row)
    if len(old)!=len(ids) or old!=new:raise RuntimeError(f'exact state verification failed in partition {partition}; no checkpoint advanced')
    entry['last']=end;state['verified_ranges']+=1;state['verified_ids']+=len(old);save()
