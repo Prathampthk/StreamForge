@@ -1,0 +1,195 @@
+{
+  "recorded_at": "2026-11-10T18:34:31.008257+00:00",
+  "source_revision": "87e9f77a30ca72158ac075c5f143580983cfdcd3",
+  "source_dirty": false,
+  "source_sha256": {
+    "experiments/incremental-analytics/prototype.py": "a2f78b38c73c453d6772763338cbbb791ce674698f0e2b035927b77cecf796a0",
+    "experiments/incremental-analytics/schema.sql": "d4867c375669f81e1ce39782aabe5263913c06adae08b97584925c05e223b5c5",
+    "experiments/incremental-analytics/stress.py": "6cf179aa3743a14857c2f7481df632c2163c1dbfce1b3fe9dab148ef03352848",
+    "experiments/incremental-analytics/sampling.xml": "dc020d58735af8f79bd89b46104abc834bccf2acbb89efe9052ad2ecdaa22803"
+  },
+  "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+  "docker_environment": "cpus=10 memory=8319438848",
+  "clickhouse_memory_bytes": 2147483648,
+  "query_memory_bytes": 67108864,
+  "experiment_sampling_logs_disabled": [
+    "metric_log",
+    "query_metric_log"
+  ],
+  "sampling_profile_verified": true,
+  "cleanup_success": true,
+  "success": true,
+  "scope": "Selected fields from two clean independent local runs; full summaries retained under ignored raw project directories",
+  "full_raw_projects": {
+    "compacted": "streamforge-incremental-40aeea7359",
+    "stress": "streamforge-incremental-eb1f94a032"
+  },
+  "lifecycle": {
+    "compacted_elapsed_seconds": 27.861829792000208,
+    "independent_stress_elapsed_seconds": 42.97253704200011,
+    "stress_case_isolation": "fresh container; planned restarts before hot-ID, bucket and each ownership case"
+  },
+  "compacted_correctness": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 5
+  },
+  "exact_int128_cents": "18446744073709551614",
+  "compacted_scales": [
+    {
+      "ids": 10000,
+      "update_select_rows": 20259,
+      "window_rows": 1,
+      "full_rebuild_success": true
+    },
+    {
+      "ids": 100000,
+      "update_select_rows": 116483,
+      "window_rows": 1,
+      "full_rebuild_success": false
+    },
+    {
+      "ids": 1000000,
+      "update_select_rows": 184067,
+      "window_rows": 1,
+      "full_rebuild_success": false
+    }
+  ],
+  "production_concurrency_safe": false,
+  "fragmented": {
+    "ids": 128000,
+    "initial_states_parts": 64,
+    "unmerged_worker_states_parts": 65,
+    "lookup_before_merge": {
+      "query_id": "incremental_8bf6bc7f5812484c9e772fe7596e1fee",
+      "wall_seconds": 0.09727745799864351,
+      "elapsed": 0.033760708,
+      "rows_read": 128256,
+      "bytes_read": 41129984
+    },
+    "lookup_after_merge": {
+      "query_id": "incremental_69fca3fbc3a24cbea8d7b8f69b9f798b",
+      "wall_seconds": 0.05622425000001385,
+      "elapsed": 0.007173501,
+      "rows_read": 84480,
+      "bytes_read": 25472842
+    },
+    "worker_select_rows": 256259
+  },
+  "hot": {
+    "generations": 32,
+    "versions_before_merge": 256,
+    "versions_after_merge": 256,
+    "pinned_snapshot_audits": [
+      {
+        "generation": 1,
+        "ids": 9,
+        "metric_rows": 2
+      },
+      {
+        "generation": 2,
+        "ids": 10,
+        "metric_rows": 1
+      },
+      {
+        "generation": 8,
+        "ids": 16,
+        "metric_rows": 1
+      },
+      {
+        "generation": 16,
+        "ids": 24,
+        "metric_rows": 1
+      },
+      {
+        "generation": 32,
+        "ids": 40,
+        "metric_rows": 1
+      }
+    ],
+    "samples": [
+      {
+        "generation": 1,
+        "lookup_rows": 9,
+        "bucket_rows": 2
+      },
+      {
+        "generation": 2,
+        "lookup_rows": 18,
+        "bucket_rows": 4
+      },
+      {
+        "generation": 8,
+        "lookup_rows": 72,
+        "bucket_rows": 10
+      },
+      {
+        "generation": 16,
+        "lookup_rows": 144,
+        "bucket_rows": 18
+      },
+      {
+        "generation": 32,
+        "lookup_rows": 288,
+        "bucket_rows": 34
+      }
+    ],
+    "merged_bucket_query": {
+      "query_id": "incremental_3b19e73156574acbadca2914f6d3255e",
+      "wall_seconds": 0.04766541599929042,
+      "elapsed": 0.001699041,
+      "rows_read": 34,
+      "bytes_read": 1606
+    },
+    "journal_bytes": {
+      "plan_bytes": 277099,
+      "commit_input_bytes": 74016
+    }
+  },
+  "many_buckets": {
+    "first_delta_keys": 2048,
+    "published_audit": {
+      "generation": 2,
+      "ids": 1024,
+      "metric_rows": 1792
+    },
+    "narrow_query": {
+      "query_id": "incremental_84b0d0ce5a4f46cc906263e9c33adcbd",
+      "wall_seconds": 0.057448542000201996,
+      "elapsed": 0.00294575,
+      "rows_read": 512,
+      "bytes_read": 44720
+    }
+  },
+  "unsafe_ownership": {
+    "expected_unsafe": true,
+    "counterexample_reproduced": true,
+    "first_worker_exit_code": 0,
+    "stale_worker_exit_code": 0,
+    "pinned_generation": 1,
+    "exact_union_reference_rows": 4,
+    "pinned_metric_rows_before": 2,
+    "pinned_metric_rows_after": 4,
+    "conflicting_commit_records": {
+      "rows": 2,
+      "distinct_inputs": 2
+    },
+    "conclusion": "local locks and max(generation) do not fence independent writers"
+  },
+  "unsafe_global_conflict": {
+    "expected_unsafe": true,
+    "counterexample_reproduced": true,
+    "first_worker_exit_code": 0,
+    "stale_worker_exit_code": 2,
+    "pinned_generation": 1,
+    "exact_union_reference_rows": 0,
+    "pinned_metric_rows_before": 2,
+    "pinned_metric_rows_after": 4,
+    "conflicting_commit_records": {
+      "rows": 1,
+      "distinct_inputs": 1
+    },
+    "conclusion": "local locks and max(generation) do not fence independent writers"
+  }
+}

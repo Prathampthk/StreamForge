@@ -4,7 +4,7 @@ The generation/delta experiment is deliberately single-writer. A filesystem lock
 
 ## Why current Kafka partition ownership is insufficient
 
-The production producer keys by `tenant_id:user_id` ([producer.go](../internal/broker/producer.go:65)). Conflicting variants of one global event ID may change either field and reach different partitions. The consumer processes assigned partitions concurrently and commits only successfully persisted partition prefixes ([consumer.go](../internal/broker/consumer.go:168), [commit](../internal/broker/consumer.go:245)). Its existing idempotent min/max sink tolerates this concurrency; the prototype's read/compute/write generation protocol does not.
+The production producer keys by `tenant_id:user_id` ([producer.go](../internal/broker/producer.go#L65)). Conflicting variants of one global event ID may change either field and reach different partitions. The consumer processes assigned partitions concurrently and commits only successfully persisted partition prefixes ([consumer.go](../internal/broker/consumer.go#L168), [commit](../internal/broker/consumer.go#L245)). Its existing idempotent min/max sink tolerates this concurrency; the prototype's read/compute/write generation protocol does not.
 
 Kafka group ownership controls Kafka consumption/offset commits. It does not make an independent ClickHouse write conditional on a current ownership epoch. Rechecking a lease or generation before INSERT leaves a check/write race. Stale data writes must remain invisible even after a newer owner publishes. See [Kafka delivery semantics](https://kafka.apache.org/40/design/design/#message-delivery-semantics).
 

@@ -1,0 +1,157 @@
+{
+  "scope": "Selected fields extracted from timestamped CI logs; separate compacted and adversarial fixture lifecycles",
+  "run_url": "https://github.com/Prathampthk/StreamForge/actions/runs/42876396564/job/130040733229",
+  "source_revision": "87e9f77a30ca72158ac075c5f143580983cfdcd3",
+  "source_dirty": false,
+  "source_sha256": {
+    "experiments/incremental-analytics/prototype.py": "a2f78b38c73c453d6772763338cbbb791ce674698f0e2b035927b77cecf796a0",
+    "experiments/incremental-analytics/schema.sql": "d4867c375669f81e1ce39782aabe5263913c06adae08b97584925c05e223b5c5",
+    "experiments/incremental-analytics/stress.py": "6cf179aa3743a14857c2f7481df632c2163c1dbfce1b3fe9dab148ef03352848",
+    "experiments/incremental-analytics/sampling.xml": "dc020d58735af8f79bd89b46104abc834bccf2acbb89efe9052ad2ecdaa22803"
+  },
+  "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+  "docker_environment": "cpus=4 memory=16760348672",
+  "sampling_profile_verified": true,
+  "experiment_sampling_logs_disabled": [
+    "metric_log",
+    "query_metric_log"
+  ],
+  "clickhouse_memory_bytes": 2147483648,
+  "query_memory_bytes": 67108864,
+  "base": {
+    "success": true,
+    "elapsed_seconds": 46.815894631999996,
+    "cleanup_success": true,
+    "correctness": {
+      "verified_ids": 12,
+      "conflicts": 5,
+      "metric_rows": 4,
+      "generation": 5
+    },
+    "scales": [
+      {
+        "ids": 10000,
+        "select_rows": 20259,
+        "window_rows": 1,
+        "full_rebuild_success": true
+      },
+      {
+        "ids": 100000,
+        "select_rows": 116483,
+        "window_rows": 1,
+        "full_rebuild_success": false
+      },
+      {
+        "ids": 1000000,
+        "select_rows": 184067,
+        "window_rows": 1,
+        "full_rebuild_success": false
+      }
+    ]
+  },
+  "stress": {
+    "success": true,
+    "elapsed_seconds": 63.587495756999985,
+    "cleanup_success": true,
+    "production_concurrency_safe": false,
+    "case_isolation": "fresh container; planned restarts before hot-ID, bucket and each ownership case",
+    "fragmented": {
+      "before_lookup": 128256,
+      "after_lookup": 84480,
+      "worker_select_rows": 256259
+    },
+    "hot": {
+      "versions_before": 256,
+      "versions_after": 256,
+      "pinned_snapshot_audits": [
+        {
+          "generation": 1,
+          "ids": 9,
+          "metric_rows": 2
+        },
+        {
+          "generation": 2,
+          "ids": 10,
+          "metric_rows": 1
+        },
+        {
+          "generation": 8,
+          "ids": 16,
+          "metric_rows": 1
+        },
+        {
+          "generation": 16,
+          "ids": 24,
+          "metric_rows": 1
+        },
+        {
+          "generation": 32,
+          "ids": 40,
+          "metric_rows": 1
+        }
+      ],
+      "lookup_rows": [
+        {
+          "generation": 1,
+          "rows": 9,
+          "bucket_rows": 2
+        },
+        {
+          "generation": 2,
+          "rows": 18,
+          "bucket_rows": 4
+        },
+        {
+          "generation": 8,
+          "rows": 72,
+          "bucket_rows": 10
+        },
+        {
+          "generation": 16,
+          "rows": 144,
+          "bucket_rows": 18
+        },
+        {
+          "generation": 32,
+          "rows": 288,
+          "bucket_rows": 34
+        }
+      ]
+    },
+    "many_buckets": {
+      "generation": 2,
+      "ids": 1024,
+      "metric_rows": 1792
+    },
+    "unsafe_ownership": {
+      "expected_unsafe": true,
+      "counterexample_reproduced": true,
+      "first_worker_exit_code": 0,
+      "stale_worker_exit_code": 0,
+      "pinned_generation": 1,
+      "exact_union_reference_rows": 4,
+      "pinned_metric_rows_before": 2,
+      "pinned_metric_rows_after": 4,
+      "conflicting_commit_records": {
+        "rows": 2,
+        "distinct_inputs": 2
+      },
+      "conclusion": "local locks and max(generation) do not fence independent writers"
+    },
+    "unsafe_global_conflict": {
+      "expected_unsafe": true,
+      "counterexample_reproduced": true,
+      "first_worker_exit_code": 0,
+      "stale_worker_exit_code": 2,
+      "pinned_generation": 1,
+      "exact_union_reference_rows": 0,
+      "pinned_metric_rows_before": 2,
+      "pinned_metric_rows_after": 4,
+      "conflicting_commit_records": {
+        "rows": 1,
+        "distinct_inputs": 1
+      },
+      "conclusion": "local locks and max(generation) do not fence independent writers"
+    }
+  }
+}
