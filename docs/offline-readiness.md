@@ -29,3 +29,5 @@ The user reports AWS account `788080238947`, Ohio (`us-east-2`), MFA-protected I
 5. Repeat the separate one-to-three-consumer scaling experiment under a consumer-bound workload, with identical resources and exact result audits. Close the original replay API versus CLI scope explicitly and refresh portfolio claims only from passing evidence.
 
 All seven [hosted CI jobs](https://github.com/Prathampthk/StreamForge/actions/runs/42760799221) passed on `41eb4e0`: contracts/race/static/vulnerability checks, real-service integration and recovery rehearsals, replicated-Kafka/real-process shutdown, infrastructure, and all four runtime image checks. This is a correctness/build gate, not a retained-size performance pass.
+
+The isolated incremental-analytics milestone passed clean local verification in 29.442s and Linux CI in 49.877s on `d192914`; all eight [CI jobs](https://github.com/Prathampthk/StreamForge/actions/runs/42763251546) passed. See [prototype evidence and limits](incremental-analytics-prototype.md). No retained migration or production flow change was made, and the fresh performance benchmark remains pending.
