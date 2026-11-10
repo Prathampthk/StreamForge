@@ -113,3 +113,7 @@ cloud-db-check:
 .PHONY: replicated-kafka-test
 replicated-kafka-test:
 	python3 scripts/check-replicated-kafka.py
+
+.PHONY: process-shutdown-test
+process-shutdown-test:
+	python3 scripts/check-replicated-kafka.py --with-process-shutdown

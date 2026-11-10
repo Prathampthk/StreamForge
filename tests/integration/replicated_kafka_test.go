@@ -211,6 +211,14 @@ func TestReplicatedKafkaAcknowledgments(t *testing.T) {
 			}
 		}
 		fetches.EachPartition(func(p kgo.FetchTopicPartition) {
+			// Canceled polls include a synthetic error partition (-1); the
+			// error loop above handles it, and it is not a topic high water.
+			if p.Err != nil {
+				return
+			}
+			if p.Topic != c.Topic || p.Partition < 0 || p.Partition >= 12 {
+				t.Fatalf("unexpected fetched topic/partition: %s/%d", p.Topic, p.Partition)
+			}
 			if p.HighWatermark == 0 {
 				drained[p.Partition] = true
 			}

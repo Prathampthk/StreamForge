@@ -12,8 +12,17 @@ As of November 9, 2026. AWS setup is not required for any local task below. Exis
 | Fresh 15-minute benchmark | Pending healthy analytics. Run with ingestion, concurrent queries and freshness probes; retain failures, accepted receipt audit and sleep checks. Do not bypass readiness to claim success. |
 | Consumer 1→3 scaling | Repeat after benchmark/audit, separately from steady load. Historical 1.91x fails the 2x target. |
 | Replicated Kafka failure drill | Passed a separate RF3/minISR2 process-failure drill: 360 acknowledged payloads recovered across 12 partitions; stricter minISR rejected unconfirmed requests. See [replicated Kafka](replicated-kafka.md). Base Compose remains RF1; no host/disk/AZ-loss guarantee. |
+| Real-process graceful shutdown | Passed locally in 106.103s: actual binaries drain pending ingestion, recover insert-before-commit replay with exact metrics, and finish an in-flight query. See [recorded evidence](evidence/process-shutdown.json) and [method](replicated-kafka.md#real-process-shutdown-coverage). Hosted CI is the committed-source gate. |
 | Security and deployment artifacts | Existing offline infrastructure/mock-plan, grants, pinned-image and CI checks are available. Revalidate final source and artifacts before publication. |
 
 The next engineering blocker is bounded incremental analytics on retained history, not AWS credentials. Partitioning bounds each aggregation, but repeated full-history scans and shared server memory remain a scaling limit. Query readiness must stay fail-closed while it is investigated.
 
 AWS-dependent work comes later: account/profile and region, live permissions/network validation, current regional cost review, artifact publication and a separately authorized deployment. No account provisioning, authenticated AWS action, image publication or spend has occurred. Follow [account setup](aws/account-setup.md) in parallel; never commit access keys or database secrets.
+
+## Remaining local completion order
+
+1. Prototype incremental analytics in an owned disposable dataset. Measure bounded work as retained history grows. Preserve exact ID/payload conflict detection, late-event handling, conflict withdrawal and restart/replay correctness. Produce a concrete design and results before any retained-data migration or topology decision; adding a PostgreSQL hot-path ledger requires separate approval under the blueprint.
+2. Apply only a verified design, then prove sustained retained-data readiness within the existing memory budgets and snapshot-age limit. Do not raise deadlines or hide failed samples to pass the gate.
+3. Rehearse backup/restore at retained scale using independent backup storage, compare exact IDs/payloads/conflicts and analytical totals, and record recovery duration and required disk space. The small disposable rehearsal alone does not establish this.
+4. Run a fresh uninterrupted fifteen-minute benchmark with concurrent revenue/traffic requests, both query windows, full receipt reconciliation and event-freshness probes. Report all errors, censored/dropped probes and the actual environment against the original targets.
+5. Repeat the separate one-to-three-consumer scaling experiment under a consumer-bound workload, with identical resources and exact result audits. Close the original replay API versus CLI scope explicitly and refresh portfolio claims only from passing evidence.

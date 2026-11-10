@@ -49,8 +49,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Three-broker acknowledgment and SIGKILL recovery
-        run: python3 scripts/check-replicated-kafka.py
+      - name: Three-broker recovery and real-process SIGTERM
+        run: python3 scripts/check-replicated-kafka.py --with-process-shutdown
 
   infrastructure:
     runs-on: ubuntu-24.04

@@ -35,3 +35,5 @@ Run fault injection and scaling separately from the sustained profile. Audit eve
 ## Replicated Kafka process failures
 
 `make replicated-kafka-test` creates a separate three-broker cluster, exercises SIGKILL/minISR changes and exact receipt reconciliation, then removes only its owned containers/volumes. See [the drill and its limits](replicated-kafka.md). It never changes the normal Kafka topic.
+
+`make process-shutdown-test` extends the owned RF3 drill with actual ingestion, consumer and query SIGTERM cases against fresh disposable databases. See [shutdown coverage](replicated-kafka.md#real-process-shutdown-coverage).
