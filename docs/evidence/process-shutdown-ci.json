@@ -1,0 +1,149 @@
+{
+  "success": true,
+  "project": "streamforge-rf3-8c11030c2e",
+  "recorded_at": "2026-11-10T05:14:10.546628+00:00",
+  "scope": "three combined broker/controller processes on one Docker VM; SIGKILL with retained disks",
+  "replication_factor": 3,
+  "normal_min_isr": 2,
+  "negative_min_isr": 3,
+  "partitions": 12,
+  "configured_max_batch_events": 200,
+  "positive_phase_events": 120,
+  "phases": {
+    "baseline": {
+      "accepted": 120,
+      "leaders": {
+        "0": 1,
+        "1": 2,
+        "2": 3,
+        "3": 1,
+        "4": 2,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 3,
+        "9": 2,
+        "10": 3,
+        "11": 1
+      }
+    },
+    "min_isr_rejection": {
+      "delivery_unknown": 12,
+      "status": 503
+    },
+    "one_down": {
+      "accepted": 240
+    },
+    "restored": {
+      "accepted": 360,
+      "leaders": {
+        "0": 2,
+        "1": 2,
+        "2": 3,
+        "3": 2,
+        "4": 2,
+        "5": 3,
+        "6": 2,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": 3,
+        "11": 2
+      }
+    }
+  },
+  "aws_operations": false,
+  "docker_environment": "cpus=4 memory=16759300096",
+  "retained_refreshes_temporarily_paused": [],
+  "test_binary_sha256": "bbc7dc5ab48f9d959279070ccdacbe9cdb948dccbd2f59621e2d400c52b6d7ee",
+  "initial_topic_config": "Dynamic configs for topic streamforge.events.v1 are:\n  min.insync.replicas=2 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:min.insync.replicas=2, STATIC_BROKER_CONFIG:min.insync.replicas=2, DEFAULT_CONFIG:min.insync.replicas=1}\n  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}\n  unclean.leader.election.enable=false sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:unclean.leader.election.enable=false, STATIC_BROKER_CONFIG:unclean.leader.election.enable=false, DEFAULT_CONFIG:unclean.leader.election.enable=false}",
+  "first_killed_broker": 1,
+  "negative_topic_config": "Dynamic configs for topic streamforge.events.v1 are:\n  min.insync.replicas=3 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:min.insync.replicas=3, STATIC_BROKER_CONFIG:min.insync.replicas=2, DEFAULT_CONFIG:min.insync.replicas=1}\n  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}\n  unclean.leader.election.enable=false sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:unclean.leader.election.enable=false, STATIC_BROKER_CONFIG:unclean.leader.election.enable=false, DEFAULT_CONFIG:unclean.leader.election.enable=false}",
+  "restored_topic_config": "Dynamic configs for topic streamforge.events.v1 are:\n  min.insync.replicas=2 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:min.insync.replicas=2, STATIC_BROKER_CONFIG:min.insync.replicas=2, DEFAULT_CONFIG:min.insync.replicas=1}\n  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}\n  unclean.leader.election.enable=false sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:unclean.leader.election.enable=false, STATIC_BROKER_CONFIG:unclean.leader.election.enable=false, DEFAULT_CONFIG:unclean.leader.election.enable=false}",
+  "second_killed_broker": 2,
+  "ingest_shutdown": {
+    "accepted": 24,
+    "outcomes": [
+      {
+        "dependency_released": true,
+        "exit_code": 0,
+        "http_status": 202,
+        "shutdown_seconds": 5.784939724
+      },
+      {
+        "dependency_released": false,
+        "exit_code": 0,
+        "http_status": 503,
+        "shutdown_seconds": 6.301254839
+      }
+    ],
+    "scope": "real ingestion binary; SIGTERM with unresolved broker promises; default 5s publish/8s request/15s shutdown limits",
+    "success": true,
+    "unknown_events_observed": 0,
+    "unknown_http_events": 12,
+    "verified_exact_payloads": 24
+  },
+  "consumer_shutdown": {
+    "accepted_fixture_ids": 10,
+    "committed_before_restart": {
+      "0": -1,
+      "1": -1,
+      "2": -1,
+      "3": -1,
+      "4": -1,
+      "5": -1,
+      "6": -1,
+      "7": -1,
+      "8": -1,
+      "9": -1,
+      "10": -1,
+      "11": -1
+    },
+    "first_exit_code": 0,
+    "offset_fetch_success": true,
+    "premature_commits": 0,
+    "raw_replay_duplicate_rows": 143,
+    "recovered_exit_code": 0,
+    "revenue_cents": {
+      "EUR": 500,
+      "USD": 200
+    },
+    "stop_point": "after_insert_before_commit",
+    "success": true,
+    "traffic": {
+      "errors": 2,
+      "events": 10,
+      "rpm": 4
+    },
+    "verified_fixture_ids": 10
+  },
+  "query_shutdown": {
+    "exit_code": 0,
+    "http_status": 200,
+    "revenue_cents": 200,
+    "scope": "real query binary; controlled proxy delays a real ClickHouse read during SIGTERM; default deadlines",
+    "shutdown_seconds": 1.076077973,
+    "success": true
+  },
+  "audit": {
+    "accepted": 360,
+    "duplicate_acknowledged_ids": 0,
+    "missing": 0,
+    "partitions_observed": 12,
+    "scope": "single Docker VM; broker process SIGKILL and retained-disk restart; no ClickHouse analytics or host/disk-loss guarantee",
+    "success": true,
+    "unknown_events_observed": 2,
+    "unknown_http_events": 12,
+    "verified_exact_payloads": 360
+  },
+  "elapsed_seconds": 201.122,
+  "cleanup_errors": [],
+  "source_revision": "41eb4e0af23b4212087a5787012c9e390573431e",
+  "source_dirty": false,
+  "source_sha256": {
+    "scripts/check-replicated-kafka.py": "6b35601a797979c80f6e54d62b997339de7f9e8be5c17b48bbcf5e743ede0300",
+    "tests/integration/replicated_kafka_test.go": "e9dcb26d49208966fc71c329f4b8d336ad2d0b1bd37e5ba89799a5ea04fefb84",
+    "deploy/compose.kafka-replicated.yaml": "efbea17d15f5369beafcacebaf959b6a8ebfaea5d192d1f269d727a069e9be80",
+    "tests/integration/shutdown_process_test.go": "5e915518522c0ec9a5b269492df491e7f52afb6c338b89d56a66c33a14db617f"
+  }
+}
