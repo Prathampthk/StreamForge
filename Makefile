@@ -117,3 +117,7 @@ replicated-kafka-test:
 .PHONY: process-shutdown-test
 process-shutdown-test:
 	python3 scripts/check-replicated-kafka.py --with-process-shutdown
+
+.PHONY: incremental-analytics-test
+incremental-analytics-test:
+	python3 experiments/incremental-analytics/prototype.py run

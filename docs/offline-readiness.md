@@ -5,6 +5,7 @@ As of November 9, 2026. AWS setup is not required for any local task below. Exis
 | Task | Current evidence / next gate |
 |---|---|
 | Exact retained identity migration | Complete: 15,871,442 IDs and full min/max strings verified; 3,899 ranges; all 16 partitions; 16 conflicts excluded. Raw and legacy data preserved. |
+| Isolated incremental analytics | A ClickHouse-only generation/delta prototype passes exact conflict/replay and crash/restart fixtures and reduces physical reads on compacted synthetic history up to one million IDs. See [method, results and open production gates](incremental-analytics-prototype.md). Not integrated or migrated; retained readiness remains unresolved. |
 | Bound business refresh work | Migrations 007–010 applied. Parsing, accounting, completion-age and block changes are tested, but sampled retained readiness still fails due to expensive scans/timeouts. See the [stability follow-up](analytics-stability-follow-up.md). |
 | Query health and correctness | Isolated integration passed in 115.502s, including stopped-source-shard rejection, conflict withdrawal, currency/Int128 totals, replay and crash recovery. Hosted CI passed on caba1e8; all six jobs also passed on 3298ede, including the new recovery rehearsal. |
 | Retained restart recovery | Ledger versions 1–7 and data survived restart. Allocator-accounting experiment did not recover sustained readiness and was reverted. Legacy table merges paused again. |
@@ -21,7 +22,7 @@ The user reports AWS account `788080238947`, Ohio (`us-east-2`), MFA-protected I
 
 ## Remaining local completion order
 
-1. Prototype incremental analytics in an owned disposable dataset. Measure bounded work as retained history grows. Preserve exact ID/payload conflict detection, late-event handling, conflict withdrawal and restart/replay correctness. Produce a concrete design and results before any retained-data migration or topology decision; adding a PostgreSQL hot-path ledger requires separate approval under the blueprint.
+1. Extend the [isolated incremental prototype](incremental-analytics-prototype.md) with adversarial part/bucket/hot-ID histories and a concurrency/ownership plus compaction design. Its current serialized synthetic pass is not a production flow decision. Preserve exact conflicts, withdrawal and replay, and prove Kafka-offset/rebalance semantics before integration. Any retained migration or topology decision remains separate; a PostgreSQL hot-path ledger requires explicit approval under the blueprint.
 2. Apply only a verified design, then prove sustained retained-data readiness within the existing memory budgets and snapshot-age limit. Do not raise deadlines or hide failed samples to pass the gate.
 3. Rehearse backup/restore at retained scale using independent backup storage, compare exact IDs/payloads/conflicts and analytical totals, and record recovery duration and required disk space. The small disposable rehearsal alone does not establish this.
 4. Run a fresh uninterrupted fifteen-minute benchmark with concurrent revenue/traffic requests, both query windows, full receipt reconciliation and event-freshness probes. Report all errors, censored/dropped probes and the actual environment against the original targets.

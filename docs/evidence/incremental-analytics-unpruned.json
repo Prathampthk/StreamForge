@@ -1,0 +1,360 @@
+{
+  "success": true,
+  "recorded_at": "2026-11-10T05:32:15.941903+00:00",
+  "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+  "project": "streamforge-incremental-780c42cb88",
+  "network": "none",
+  "clickhouse_memory_bytes": 2147483648,
+  "query_memory_bytes": 67108864,
+  "scope": "serialized synthetic ClickHouse generations; no Kafka integration, retained migration or SLO claim",
+  "aws_operations": false,
+  "crash_checks": [
+    {
+      "boundary": "after_plan",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_states",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_deltas",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "before_commit",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_commit",
+      "visible": {
+        "verified_ids": 7,
+        "conflicts": 0,
+        "metric_rows": 5,
+        "generation": 2
+      },
+      "exit_code": 86
+    }
+  ],
+  "scales": [
+    {
+      "retained_identities": 10000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.5008332500001416,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 3500000,
+          "elapsed": 0.003081667,
+          "query_id": "incremental_f9ec4457eaea4b1e949e7219914da99f",
+          "rows_read": 10000,
+          "wall_seconds": 0.0495367499997883
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.0009285,
+            "query_id": "incremental_cf93fe1920814a05a56a7967e7540e10",
+            "rows_read": 1,
+            "wall_seconds": 0.04683883399957267
+          },
+          {
+            "bytes_read": 3500000,
+            "elapsed": 0.003081667,
+            "query_id": "incremental_f9ec4457eaea4b1e949e7219914da99f",
+            "rows_read": 10000,
+            "wall_seconds": 0.0495367499997883
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000718082,
+            "query_id": "incremental_4b929e1567cb494998ca3e04011f1ac6",
+            "rows_read": 0,
+            "wall_seconds": 0.04505633400003717
+          },
+          {
+            "bytes_read": 177152,
+            "elapsed": 0.001943251,
+            "query_id": "incremental_d6d2f0cc6ea349489617c6745fefbc37",
+            "rows_read": 10256,
+            "wall_seconds": 0.04887737500030198
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001890249,
+            "query_id": "incremental_dffdd3e3a60646939aba0abe27f5c1df",
+            "rows_read": 2,
+            "wall_seconds": 0.05491258299934998
+          }
+        ]
+      },
+      "window_query": {
+        "query_id": "incremental_fe4a6964824249b7b733d9e3be308ecc",
+        "wall_seconds": 0.04733574999954726,
+        "elapsed": 0.001813084,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": true,
+        "measurement": {
+          "query_id": "incremental_eabdc3f3cb2946478e29ddfad7d68f21",
+          "wall_seconds": 0.05135437499939144,
+          "elapsed": 0.006270918,
+          "rows_read": 10256,
+          "bytes_read": 3597152
+        }
+      }
+    },
+    {
+      "retained_identities": 100000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.47633999999925436,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 19532930,
+          "elapsed": 0.007755834,
+          "query_id": "incremental_4b0de25703c343428f3344876dcc020b",
+          "rows_read": 100000,
+          "wall_seconds": 0.05247774999952526
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.000835959,
+            "query_id": "incremental_0410af3d5fa1403283646f74520f6a5e",
+            "rows_read": 1,
+            "wall_seconds": 0.04611229199963418
+          },
+          {
+            "bytes_read": 19532930,
+            "elapsed": 0.007755834,
+            "query_id": "incremental_4b0de25703c343428f3344876dcc020b",
+            "rows_read": 100000,
+            "wall_seconds": 0.05247774999952526
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000693542,
+            "query_id": "incremental_49fe987cc6d94fd5b66fe885e35df34c",
+            "rows_read": 0,
+            "wall_seconds": 0.04460137499972916
+          },
+          {
+            "bytes_read": 465792,
+            "elapsed": 0.002304875,
+            "query_id": "incremental_b34319660cd348ea810fc81c87ed21a9",
+            "rows_read": 46336,
+            "wall_seconds": 0.047230375000253844
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001655583,
+            "query_id": "incremental_7bb3d91b9d0346bd89bb2a69499712ca",
+            "rows_read": 2,
+            "wall_seconds": 0.0451069999999163
+          }
+        ]
+      },
+      "window_query": {
+        "query_id": "incremental_71130ef5d86940b999d4c508bf266b5f",
+        "wall_seconds": 0.045480540999960795,
+        "elapsed": 0.001730168,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": false,
+        "error": "Received exception from server (version 25.8.4):\nCode: 241. DB::Exception: Received from localhost:9000. DB::Exception: Query memory limit exceeded: would use 72.70 MiB (attempt to allocate chunk of 30.50 MiB bytes), maximum: 64.00 MiB: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED)\n(query: SELECT JSONExtractString(lo,'tenant_id') AS tenant,count() AS events FROM (SELECT event_id,argMax(payload_min,generation) AS lo,argMax(payload_max,generation) AS hi FROM states WHERE generation<=2 GROUP BY event_id) WHERE lo=hi GROUP BY tenant ORDER BY tenant SETTINGS max_threads=1,max_memory_usage=67108864,max_execution_time=30,max_block_size=4096,output_format_json_quote_64bit_integers=0 FORMAT JSON)\n",
+        "memory_budget_bytes": 67108864
+      }
+    },
+    {
+      "retained_identities": 1000000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.5221840410004006,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 44571904,
+          "elapsed": 0.036785458,
+          "query_id": "incremental_3cff5bd661fd437e9b0e929f646a81c0",
+          "rows_read": 1000000,
+          "wall_seconds": 0.08319341700007499
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.0010935,
+            "query_id": "incremental_7201c00832fb45c6ae62bf03a81131b6",
+            "rows_read": 1,
+            "wall_seconds": 0.048235207999823615
+          },
+          {
+            "bytes_read": 44571904,
+            "elapsed": 0.036785458,
+            "query_id": "incremental_3cff5bd661fd437e9b0e929f646a81c0",
+            "rows_read": 1000000,
+            "wall_seconds": 0.08319341700007499
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000768792,
+            "query_id": "incremental_d081a48611fb4efbbfece3b960491fe0",
+            "rows_read": 0,
+            "wall_seconds": 0.04676666699924681
+          },
+          {
+            "bytes_read": 600960,
+            "elapsed": 0.003601542,
+            "query_id": "incremental_8f7e41f25c0c47d8952b5b7247be4304",
+            "rows_read": 63232,
+            "wall_seconds": 0.04986987499978568
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001837916,
+            "query_id": "incremental_308c9d9ada304a7192294cb356f659d8",
+            "rows_read": 2,
+            "wall_seconds": 0.04523745799997414
+          }
+        ]
+      },
+      "window_query": {
+        "query_id": "incremental_519aac9d0c284a4c967cf140536f0220",
+        "wall_seconds": 0.046154167000167945,
+        "elapsed": 0.001764208,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": false,
+        "error": "Received exception from server (version 25.8.4):\nCode: 241. DB::Exception: Received from localhost:9000. DB::Exception: Query memory limit exceeded: would use 72.73 MiB (attempt to allocate chunk of 30.50 MiB bytes), maximum: 64.00 MiB: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED)\n(query: SELECT JSONExtractString(lo,'tenant_id') AS tenant,count() AS events FROM (SELECT event_id,argMax(payload_min,generation) AS lo,argMax(payload_max,generation) AS hi FROM states WHERE generation<=2 GROUP BY event_id) WHERE lo=hi GROUP BY tenant ORDER BY tenant SETTINGS max_threads=1,max_memory_usage=67108864,max_execution_time=30,max_block_size=4096,output_format_json_quote_64bit_integers=0 FORMAT JSON)\n",
+        "memory_budget_bytes": 67108864
+      }
+    }
+  ],
+  "docker_environment": "cpus=10 memory=8319438848",
+  "unpublished_restart_audit": {
+    "verified_ids": 7,
+    "conflicts": 0,
+    "metric_rows": 5,
+    "generation": 2
+  },
+  "restart_audit": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 4
+  },
+  "same_host_lock_verified": true,
+  "no_op_replay": {
+    "changed_identities": 0,
+    "delta_rows": 0,
+    "generation": 5,
+    "input_events": 3,
+    "lookup": {
+      "bytes_read": 6492,
+      "elapsed": 0.001641582,
+      "query_id": "incremental_1b684eac35674ed9a6523ba62e80c791",
+      "rows_read": 19,
+      "wall_seconds": 0.04786566600068909
+    },
+    "measurements": [
+      {
+        "bytes_read": 32,
+        "elapsed": 0.001018375,
+        "query_id": "incremental_84a0f658a05c4a14a429e67f20f2cd24",
+        "rows_read": 4,
+        "wall_seconds": 0.05098774999987654
+      },
+      {
+        "bytes_read": 6492,
+        "elapsed": 0.001641582,
+        "query_id": "incremental_1b684eac35674ed9a6523ba62e80c791",
+        "rows_read": 19,
+        "wall_seconds": 0.04786566600068909
+      },
+      {
+        "bytes_read": 0,
+        "elapsed": 0.001404292,
+        "query_id": "incremental_966cd9b345ff431094797e6e5b620dda",
+        "rows_read": 0,
+        "wall_seconds": 0.052839334000054805
+      }
+    ]
+  },
+  "correctness": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 5
+  },
+  "negative_guards": [
+    "changed pending input",
+    "changed committed input",
+    "generation gap",
+    "same-host concurrent writer"
+  ],
+  "physical_rows": [
+    {
+      "identity_rows": 19,
+      "delta_rows": 19
+    }
+  ],
+  "int128_exact_total_verified": "18446744073709551614",
+  "cleanup_success": true,
+  "elapsed_seconds": 26.737894457999573,
+  "source_revision": "9e161f5b46318f668f02415103dd99a5f6826341",
+  "source_dirty": true,
+  "source_sha256": {
+    "experiments/incremental-analytics/prototype.py": "d37dd29f2bb2fa273fae80c3f35377603859af6ff6ba59e028189f8b30b6e921",
+    "experiments/incremental-analytics/schema.sql": "d4867c375669f81e1ce39782aabe5263913c06adae08b97584925c05e223b5c5"
+  }
+}
