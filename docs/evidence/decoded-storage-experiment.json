@@ -1,0 +1,56 @@
+{
+  "scope": "same copied partition, shared host, warm cache; not full-history concurrent shards or SLO acceptance",
+  "copied_rows": 992254,
+  "comparison_correctness_pass": true,
+  "cleanup_errors": [],
+  "groups": [
+    {
+      "candidate": "runtime",
+      "concurrency": 1,
+      "group_wall_seconds": 1.1379,
+      "successful_queries": 1,
+      "exact_metric_matches": 1
+    },
+    {
+      "candidate": "stored",
+      "concurrency": 1,
+      "group_wall_seconds": 0.9676,
+      "successful_queries": 1,
+      "exact_metric_matches": 1
+    },
+    {
+      "candidate": "stored",
+      "concurrency": 4,
+      "group_wall_seconds": 1.7988,
+      "successful_queries": 4,
+      "exact_metric_matches": 4
+    },
+    {
+      "candidate": "runtime",
+      "concurrency": 4,
+      "group_wall_seconds": 1.2158,
+      "successful_queries": 4,
+      "exact_metric_matches": 4
+    },
+    {
+      "candidate": "runtime",
+      "concurrency": 16,
+      "group_wall_seconds": 5.2674,
+      "successful_queries": 16,
+      "exact_metric_matches": 16
+    },
+    {
+      "candidate": "stored",
+      "concurrency": 16,
+      "group_wall_seconds": 6.1643,
+      "successful_queries": 16,
+      "exact_metric_matches": 16
+    }
+  ],
+  "decision": "Do not materialize fields in retained data: no reliable concurrent improvement established.",
+  "initial_harness_attempts": [
+    "readonly=1 rejected fixed query SETTINGS; changed the experiment to readonly=2",
+    "baseline alias replacement changed the owned table name; corrected substitution order"
+  ],
+  "retained_identity_schema_changed_by_experiment": false
+}

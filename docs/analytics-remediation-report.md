@@ -1,3 +1,5 @@
+**Latest follow-up:** [November 9 stability work](analytics-stability-follow-up.md) records migrations 008–010, corrected completed-snapshot age, container accounting, retry safety, green CI and the rejected stored-field experiment. Sustained retained readiness and the new fifteen-minute benchmark remain incomplete.
+
 # Local analytics memory remediation
 
 **Current status, November 9:** user-approved migrations 005/006 completed on retained data: **15,871,442 IDs**, exact full min/max strings across **3,899 verified ranges**, all 16 partitions and equal source/target cardinality. Sixteen conflicts leave **15,871,426 canonical events**. Original raw facts and legacy identity tables remain; the legacy write MV is permanently detached. Migration 007's partitioned metric caches produced that same canonical total, but intermittent server-wide memory failures still prevent sustained healthy readiness. No new concurrent benchmark or AWS operation has run. See [ADR 012](adr/012-partitioned-metric-refresh.md) and [offline readiness](offline-readiness.md).
