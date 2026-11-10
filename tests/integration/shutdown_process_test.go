@@ -47,6 +47,11 @@ func shutdownDirectory(t *testing.T) string {
 	if path == "" {
 		t.Fatal("RF3_RESULTS required")
 	}
+	t.Cleanup(func() {
+		if t.Failed() {
+			shutdownReport(t, "failed.json", map[string]any{"test": t.Name(), "success": false})
+		}
+	})
 	return path
 }
 func shutdownReport(t *testing.T, name string, value any) {

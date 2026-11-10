@@ -73,13 +73,17 @@ def main():
             path = directory / name
             if path.exists():
                 return json.loads(path.read_text())
+            if (directory/'failed.json').exists():
+                logs = subprocess.run(['docker', 'logs', container], capture_output=True, text=True)
+                raise RuntimeError('drill reported failure: '+(logs.stdout+logs.stderr)[-14000:])
             state = run(['docker', 'inspect', '--format', '{{.State.Running}} {{.State.ExitCode}}', container]).stdout.decode().strip()
             if state != 'true 0':
                 logs = subprocess.run(['docker', 'logs', container], capture_output=True, text=True).stdout
                 (directory / (container+'.log')).write_text(logs)
                 raise RuntimeError('drill exited before '+name+': '+logs[-3500:])
             time.sleep(.5)
-        raise RuntimeError('timeout waiting for '+name)
+        logs = subprocess.run(['docker', 'logs', container], capture_output=True, text=True)
+        raise RuntimeError('timeout waiting for '+name+': '+(logs.stdout+logs.stderr)[-14000:])
 
     def release(name):
         temporary = directory / (name+'.tmp')
