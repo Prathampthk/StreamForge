@@ -1,0 +1,1294 @@
+{
+  "success": true,
+  "recorded_at": "2026-11-10T05:57:13.459021+00:00",
+  "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+  "project": "streamforge-incremental-e634a3b19c",
+  "network": "none",
+  "clickhouse_memory_bytes": 2147483648,
+  "query_memory_bytes": 67108864,
+  "scope": "serialized synthetic ClickHouse generations; no Kafka integration, retained migration or SLO claim",
+  "aws_operations": false,
+  "crash_checks": [
+    {
+      "boundary": "after_plan",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_states",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_deltas",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "before_commit",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_commit",
+      "visible": {
+        "verified_ids": 7,
+        "conflicts": 0,
+        "metric_rows": 5,
+        "generation": 2
+      },
+      "exit_code": 86
+    }
+  ],
+  "scales": [
+    {
+      "retained_identities": 10000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.6850179590001062,
+      "total_update_select_rows": 20259,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 3500000,
+          "elapsed": 0.003190834,
+          "query_id": "incremental_311818cf91204ac79d145c13592f3361",
+          "rows_read": 10000,
+          "wall_seconds": 0.05539320899970335
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.00139525,
+            "query_id": "incremental_7ddd706cbf65430296f16a6b88580e2e",
+            "rows_read": 1,
+            "wall_seconds": 0.05548175000058109
+          },
+          {
+            "bytes_read": 3500000,
+            "elapsed": 0.003190834,
+            "query_id": "incremental_311818cf91204ac79d145c13592f3361",
+            "rows_read": 10000,
+            "wall_seconds": 0.05539320899970335
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000750666,
+            "query_id": "incremental_3f2a6887b7c64eecb5b6e167bcfb3646",
+            "rows_read": 0,
+            "wall_seconds": 0.047726709000016854
+          },
+          {
+            "bytes_read": 177152,
+            "elapsed": 0.002160501,
+            "query_id": "incremental_f90aae3cd07843788115956ed93e3f0e",
+            "rows_read": 10256,
+            "wall_seconds": 0.050979957999516046
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001963,
+            "query_id": "incremental_dd2249ee52bc42f98ee0bf9cdf06df7f",
+            "rows_read": 2,
+            "wall_seconds": 0.059732458000326005
+          }
+        ],
+        "verification_bucket_chunk": 128
+      },
+      "window_query": {
+        "query_id": "incremental_5f25266e6eb74066a0ab0bde89409115",
+        "wall_seconds": 0.06110133299989684,
+        "elapsed": 0.002184333,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": true,
+        "measurement": {
+          "query_id": "incremental_8516be1ac4c04f9cbbab3cd8696c5cd8",
+          "wall_seconds": 0.1287131250001039,
+          "elapsed": 0.009042833,
+          "rows_read": 10256,
+          "bytes_read": 3597152
+        }
+      }
+    },
+    {
+      "retained_identities": 100000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.5299989999994068,
+      "total_update_select_rows": 116483,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 20282408,
+          "elapsed": 0.007000084,
+          "query_id": "incremental_b903d157ed8843efac4ef6d5c098aad4",
+          "rows_read": 70144,
+          "wall_seconds": 0.05442337500062422
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.000934208,
+            "query_id": "incremental_99d0179ada36464a9753ebef06a9e94d",
+            "rows_read": 1,
+            "wall_seconds": 0.05146479199993337
+          },
+          {
+            "bytes_read": 20282408,
+            "elapsed": 0.007000084,
+            "query_id": "incremental_b903d157ed8843efac4ef6d5c098aad4",
+            "rows_read": 70144,
+            "wall_seconds": 0.05442337500062422
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000864042,
+            "query_id": "incremental_cdc9cf29086e433abd1a2d79aa975fa0",
+            "rows_read": 0,
+            "wall_seconds": 0.05118949999996403
+          },
+          {
+            "bytes_read": 465792,
+            "elapsed": 0.002488458,
+            "query_id": "incremental_e9b1c79ab6264ceabcc540f9555be375",
+            "rows_read": 46336,
+            "wall_seconds": 0.04971316699993622
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.002296958,
+            "query_id": "incremental_aeddb10d90f04ec4b99e11af84eb6a2a",
+            "rows_read": 2,
+            "wall_seconds": 0.05098516700036271
+          }
+        ],
+        "verification_bucket_chunk": 128
+      },
+      "window_query": {
+        "query_id": "incremental_df62d1b9c3fc47209b5af98bafd9f0d9",
+        "wall_seconds": 0.07595716700052435,
+        "elapsed": 0.002717083,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": false,
+        "error": "Received exception from server (version 25.8.4):\nCode: 241. DB::Exception: Received from localhost:9000. DB::Exception: Query memory limit exceeded: would use 72.70 MiB (attempt to allocate chunk of 30.50 MiB bytes), maximum: 64.00 MiB: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED)\n(query: SELECT JSONExtractString(lo,'tenant_id') AS tenant,count() AS events FROM (SELECT event_id,argMax(payload_min,generation) AS lo,argMax(payload_max,generation) AS hi FROM states WHERE generation<=2 GROUP BY event_id) WHERE lo=hi GROUP BY tenant ORDER BY tenant SETTINGS max_threads=1,max_memory_usage=67108864,max_execution_time=30,max_block_size=4096,output_format_json_quote_64bit_integers=0 FORMAT JSON)\n",
+        "memory_budget_bytes": 67108864
+      }
+    },
+    {
+      "retained_identities": 1000000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.5135465829998793,
+      "total_update_select_rows": 184067,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 31341838,
+          "elapsed": 0.012992083,
+          "query_id": "incremental_1c86fdfd9f324196b0c00041444809ff",
+          "rows_read": 120832,
+          "wall_seconds": 0.059403624999504245
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.000936459,
+            "query_id": "incremental_3a5f189a8564461d83a39401e7e59403",
+            "rows_read": 1,
+            "wall_seconds": 0.051430208000056155
+          },
+          {
+            "bytes_read": 31341838,
+            "elapsed": 0.012992083,
+            "query_id": "incremental_1c86fdfd9f324196b0c00041444809ff",
+            "rows_read": 120832,
+            "wall_seconds": 0.059403624999504245
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000737208,
+            "query_id": "incremental_b815bd69b41f4bdcacb64caee30f7a6d",
+            "rows_read": 0,
+            "wall_seconds": 0.04679495799973665
+          },
+          {
+            "bytes_read": 600960,
+            "elapsed": 0.003247876,
+            "query_id": "incremental_41ad9652d0d34484b97a0b4f9f791800",
+            "rows_read": 63232,
+            "wall_seconds": 0.056995542000549904
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001838166,
+            "query_id": "incremental_ccf42154506e4256b57ccc9fd7a727e2",
+            "rows_read": 2,
+            "wall_seconds": 0.04831708300025639
+          }
+        ],
+        "verification_bucket_chunk": 128
+      },
+      "window_query": {
+        "query_id": "incremental_c9b92741a5e24597a72640902fc979ef",
+        "wall_seconds": 0.047891208999317314,
+        "elapsed": 0.001741042,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": false,
+        "error": "Received exception from server (version 25.8.4):\nCode: 241. DB::Exception: Received from localhost:9000. DB::Exception: Query memory limit exceeded: would use 72.73 MiB (attempt to allocate chunk of 30.50 MiB bytes), maximum: 64.00 MiB: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED)\n(query: SELECT JSONExtractString(lo,'tenant_id') AS tenant,count() AS events FROM (SELECT event_id,argMax(payload_min,generation) AS lo,argMax(payload_max,generation) AS hi FROM states WHERE generation<=2 GROUP BY event_id) WHERE lo=hi GROUP BY tenant ORDER BY tenant SETTINGS max_threads=1,max_memory_usage=67108864,max_execution_time=30,max_block_size=4096,output_format_json_quote_64bit_integers=0 FORMAT JSON)\n",
+        "memory_budget_bytes": 67108864
+      }
+    }
+  ],
+  "docker_environment": "cpus=10 memory=8319438848",
+  "unpublished_restart_audit": {
+    "verified_ids": 7,
+    "conflicts": 0,
+    "metric_rows": 5,
+    "generation": 2
+  },
+  "restart_audit": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 4
+  },
+  "same_host_lock_verified": true,
+  "no_op_replay": {
+    "changed_identities": 0,
+    "delta_rows": 0,
+    "generation": 5,
+    "input_events": 3,
+    "lookup": {
+      "bytes_read": 6492,
+      "elapsed": 0.001928625,
+      "query_id": "incremental_a3f54abb975c45b69c57459be5e3d0e0",
+      "rows_read": 19,
+      "wall_seconds": 0.052260041999943496
+    },
+    "measurements": [
+      {
+        "bytes_read": 32,
+        "elapsed": 0.001117042,
+        "query_id": "incremental_c06ee1feb3714eeeab82781b62eca6d9",
+        "rows_read": 4,
+        "wall_seconds": 0.04949512499933917
+      },
+      {
+        "bytes_read": 6492,
+        "elapsed": 0.001928625,
+        "query_id": "incremental_a3f54abb975c45b69c57459be5e3d0e0",
+        "rows_read": 19,
+        "wall_seconds": 0.052260041999943496
+      },
+      {
+        "bytes_read": 0,
+        "elapsed": 0.00127625,
+        "query_id": "incremental_3e0ba64ae42440738ba25a435d293ae9",
+        "rows_read": 0,
+        "wall_seconds": 0.05057866700008162
+      }
+    ],
+    "verification_bucket_chunk": 128
+  },
+  "correctness": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 5
+  },
+  "negative_guards": [
+    "changed pending input",
+    "changed committed input",
+    "generation gap",
+    "same-host concurrent writer"
+  ],
+  "physical_rows": [
+    {
+      "identity_rows": 19,
+      "delta_rows": 19
+    }
+  ],
+  "int128_exact_total_verified": "18446744073709551614",
+  "stress": {
+    "success": true,
+    "production_concurrency_safe": false,
+    "scope": "adversarial synthetic storage; expected unsafe split-brain negative control included",
+    "parts": {
+      "seed_identities": 128000,
+      "selected_ids": 256,
+      "before_parts": [
+        {
+          "table": "commits",
+          "parts": 1,
+          "rows": 1,
+          "bytes": 548
+        },
+        {
+          "table": "deltas",
+          "parts": 1,
+          "rows": 1,
+          "bytes": 1200
+        },
+        {
+          "table": "states",
+          "parts": 64,
+          "rows": 128000,
+          "bytes": 12288388
+        }
+      ],
+      "after_parts": [
+        {
+          "table": "commits",
+          "parts": 1,
+          "rows": 1,
+          "bytes": 548
+        },
+        {
+          "table": "deltas",
+          "parts": 1,
+          "rows": 1,
+          "bytes": 1200
+        },
+        {
+          "table": "states",
+          "parts": 1,
+          "rows": 128000,
+          "bytes": 11795393
+        }
+      ],
+      "before_lookup": {
+        "query_id": "incremental_52feb01e576e4e31a59315e41d691018",
+        "wall_seconds": 0.06205033300011564,
+        "elapsed": 0.0156965,
+        "rows_read": 128000,
+        "bytes_read": 41127936
+      },
+      "after_lookup": {
+        "query_id": "incremental_44ae5ae09a934abeb8b4528ce4850615",
+        "wall_seconds": 0.05603766700005508,
+        "elapsed": 0.007228249,
+        "rows_read": 83968,
+        "bytes_read": 27021062
+      },
+      "exact_strings_verified": true,
+      "update": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 27021062,
+          "elapsed": 0.008169417,
+          "query_id": "incremental_5a004222ba6e4c97be1ea7cfa5a2c229",
+          "rows_read": 83968,
+          "wall_seconds": 0.05523054100012814
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.000858458,
+            "query_id": "incremental_1d036e71dd884950bc72bb78a7ebbedd",
+            "rows_read": 1,
+            "wall_seconds": 0.04964100000051985
+          },
+          {
+            "bytes_read": 27021062,
+            "elapsed": 0.008169417,
+            "query_id": "incremental_5a004222ba6e4c97be1ea7cfa5a2c229",
+            "rows_read": 83968,
+            "wall_seconds": 0.05523054100012814
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000732292,
+            "query_id": "incremental_3dafe53964974b25ac29e96c0c9c9987",
+            "rows_read": 0,
+            "wall_seconds": 0.04472333300054743
+          },
+          {
+            "bytes_read": 521856,
+            "elapsed": 0.002462959,
+            "query_id": "incremental_cf818142b6084de3b7456e0d05a95ba9",
+            "rows_read": 53504,
+            "wall_seconds": 0.04836479200002941
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001718417,
+            "query_id": "incremental_7243067500df4aaf856fc325cfc3d5ac",
+            "rows_read": 2,
+            "wall_seconds": 0.04600854199998139
+          }
+        ],
+        "verification_bucket_chunk": 128
+      }
+    },
+    "last_completed_stage": "complete_expected_unsafe_control",
+    "hot_history": {
+      "generations": 32,
+      "hot_ids": 8,
+      "samples": [
+        {
+          "generation": 1,
+          "audit": {
+            "generation": 1,
+            "ids": 9,
+            "metric_rows": 2
+          },
+          "update": {
+            "changed_identities": 9,
+            "delta_rows": 2,
+            "generation": 1,
+            "input_events": 9,
+            "lookup": {
+              "bytes_read": 0,
+              "elapsed": 0.001003291,
+              "query_id": "incremental_b3d8500441834eb0b7e2f1dd44476da3",
+              "rows_read": 0,
+              "wall_seconds": 0.04558541700043861
+            },
+            "measurements": [
+              {
+                "bytes_read": 0,
+                "elapsed": 0.000677667,
+                "query_id": "incremental_1f3418934f5848e88f128c8a8873d845",
+                "rows_read": 0,
+                "wall_seconds": 0.045087792000231275
+              },
+              {
+                "bytes_read": 0,
+                "elapsed": 0.001003291,
+                "query_id": "incremental_b3d8500441834eb0b7e2f1dd44476da3",
+                "rows_read": 0,
+                "wall_seconds": 0.04558541700043861
+              },
+              {
+                "bytes_read": 0,
+                "elapsed": 0.000685458,
+                "query_id": "incremental_2f08cd8e645a4a8582fbd2d163339787",
+                "rows_read": 0,
+                "wall_seconds": 0.04508808299942757
+              },
+              {
+                "bytes_read": 4966,
+                "elapsed": 0.001264667,
+                "query_id": "incremental_bbba91d81d2341e584885ea44f2f420d",
+                "rows_read": 9,
+                "wall_seconds": 0.04509874999985186
+              },
+              {
+                "bytes_read": 211,
+                "elapsed": 0.001567417,
+                "query_id": "incremental_e29d436cb7024a3781ed4e48cc943e70",
+                "rows_read": 2,
+                "wall_seconds": 0.04706041700046626
+              }
+            ],
+            "verification_bucket_chunk": 128
+          },
+          "hot_lookup": {
+            "query_id": "incremental_b73772da2ff44cd9bc664cdd45cd1caf",
+            "wall_seconds": 0.04658358300002874,
+            "elapsed": 0.001521791,
+            "rows_read": 9,
+            "bytes_read": 4966
+          },
+          "bucket_query": {
+            "query_id": "incremental_043b1bb95e514032abb842f08868120b",
+            "wall_seconds": 0.048085291999996116,
+            "elapsed": 0.0017015,
+            "rows_read": 2,
+            "bytes_read": 211
+          },
+          "parts": [
+            {
+              "table": "commits",
+              "parts": 1,
+              "rows": 1,
+              "bytes": 1026
+            },
+            {
+              "table": "deltas",
+              "parts": 1,
+              "rows": 2,
+              "bytes": 1212
+            },
+            {
+              "table": "plans",
+              "parts": 1,
+              "rows": 1,
+              "bytes": 1558
+            },
+            {
+              "table": "states",
+              "parts": 1,
+              "rows": 9,
+              "bytes": 1337
+            }
+          ]
+        },
+        {
+          "generation": 2,
+          "audit": {
+            "generation": 2,
+            "ids": 10,
+            "metric_rows": 1
+          },
+          "update": {
+            "changed_identities": 9,
+            "delta_rows": 2,
+            "generation": 2,
+            "input_events": 9,
+            "lookup": {
+              "bytes_read": 4966,
+              "elapsed": 0.001486501,
+              "query_id": "incremental_dfb5ba699a1b41698fd7946c95e04427",
+              "rows_read": 9,
+              "wall_seconds": 0.046627374999843596
+            },
+            "measurements": [
+              {
+                "bytes_read": 8,
+                "elapsed": 0.000863916,
+                "query_id": "incremental_0dcc3f46a3fb4e94ac68eafad2b814e0",
+                "rows_read": 1,
+                "wall_seconds": 0.04587266699945758
+              },
+              {
+                "bytes_read": 4966,
+                "elapsed": 0.001486501,
+                "query_id": "incremental_dfb5ba699a1b41698fd7946c95e04427",
+                "rows_read": 9,
+                "wall_seconds": 0.046627374999843596
+              },
+              {
+                "bytes_read": 0,
+                "elapsed": 0.000931542,
+                "query_id": "incremental_2b8d5f28576b4922b0af779882e06e9d",
+                "rows_read": 0,
+                "wall_seconds": 0.045863667000048736
+              },
+              {
+                "bytes_read": 5038,
+                "elapsed": 0.001420584,
+                "query_id": "incremental_881218138aed4f31911b398bd3069116",
+                "rows_read": 18,
+                "wall_seconds": 0.045627957999386126
+              },
+              {
+                "bytes_read": 422,
+                "elapsed": 0.001710792,
+                "query_id": "incremental_76d8179205a84e7a8d43e157f8ebdde1",
+                "rows_read": 4,
+                "wall_seconds": 0.04603725000015402
+              }
+            ],
+            "verification_bucket_chunk": 128
+          },
+          "hot_lookup": {
+            "query_id": "incremental_0c75f2c00d294139930c8999d1a61879",
+            "wall_seconds": 0.04762633399968763,
+            "elapsed": 0.001580667,
+            "rows_read": 18,
+            "bytes_read": 9932
+          },
+          "bucket_query": {
+            "query_id": "incremental_23f02fcf786843d495242cab5595acd1",
+            "wall_seconds": 0.04638208400047006,
+            "elapsed": 0.001803833,
+            "rows_read": 4,
+            "bytes_read": 422
+          },
+          "parts": [
+            {
+              "table": "commits",
+              "parts": 2,
+              "rows": 2,
+              "bytes": 2052
+            },
+            {
+              "table": "deltas",
+              "parts": 2,
+              "rows": 4,
+              "bytes": 2429
+            },
+            {
+              "table": "plans",
+              "parts": 2,
+              "rows": 2,
+              "bytes": 3124
+            },
+            {
+              "table": "states",
+              "parts": 2,
+              "rows": 18,
+              "bytes": 2679
+            }
+          ]
+        },
+        {
+          "generation": 8,
+          "audit": {
+            "generation": 8,
+            "ids": 16,
+            "metric_rows": 1
+          },
+          "update": {
+            "changed_identities": 9,
+            "delta_rows": 1,
+            "generation": 8,
+            "input_events": 9,
+            "lookup": {
+              "bytes_read": 34762,
+              "elapsed": 0.00199,
+              "query_id": "incremental_317cb71e032242d181fedf49da644d65",
+              "rows_read": 63,
+              "wall_seconds": 0.05123695800011774
+            },
+            "measurements": [
+              {
+                "bytes_read": 56,
+                "elapsed": 0.001114959,
+                "query_id": "incremental_6b5181e7e4334101b1345a1567220b38",
+                "rows_read": 7,
+                "wall_seconds": 0.04723733300033928
+              },
+              {
+                "bytes_read": 34762,
+                "elapsed": 0.00199,
+                "query_id": "incremental_317cb71e032242d181fedf49da644d65",
+                "rows_read": 63,
+                "wall_seconds": 0.05123695800011774
+              },
+              {
+                "bytes_read": 0,
+                "elapsed": 0.0009095,
+                "query_id": "incremental_fba264ea3f24427b8ba8d3947c753290",
+                "rows_read": 0,
+                "wall_seconds": 0.04729541699998663
+              },
+              {
+                "bytes_read": 5470,
+                "elapsed": 0.001944166,
+                "query_id": "incremental_c46b0cd8bb8d41a4abb53662a4da86a6",
+                "rows_read": 72,
+                "wall_seconds": 0.05334316700009367
+              },
+              {
+                "bytes_read": 574,
+                "elapsed": 0.001685833,
+                "query_id": "incremental_91e98cd0607744d6bd6dc2ff020e8f11",
+                "rows_read": 5,
+                "wall_seconds": 0.046537249999346386
+              }
+            ],
+            "verification_bucket_chunk": 128
+          },
+          "hot_lookup": {
+            "query_id": "incremental_ca32d427ff0b4bada094e3667de128dd",
+            "wall_seconds": 0.04700104199946509,
+            "elapsed": 0.001942167,
+            "rows_read": 72,
+            "bytes_read": 39728
+          },
+          "bucket_query": {
+            "query_id": "incremental_debd14f53d3d4b2bb74076551b60c21d",
+            "wall_seconds": 0.04774825000004057,
+            "elapsed": 0.002236208,
+            "rows_read": 10,
+            "bytes_read": 1334
+          },
+          "parts": [
+            {
+              "table": "commits",
+              "parts": 8,
+              "rows": 8,
+              "bytes": 8208
+            },
+            {
+              "table": "deltas",
+              "parts": 8,
+              "rows": 10,
+              "bytes": 9569
+            },
+            {
+              "table": "plans",
+              "parts": 8,
+              "rows": 8,
+              "bytes": 12304
+            },
+            {
+              "table": "states",
+              "parts": 8,
+              "rows": 72,
+              "bytes": 10729
+            }
+          ]
+        },
+        {
+          "generation": 16,
+          "audit": {
+            "generation": 16,
+            "ids": 24,
+            "metric_rows": 1
+          },
+          "update": {
+            "changed_identities": 9,
+            "delta_rows": 1,
+            "generation": 16,
+            "input_events": 9,
+            "lookup": {
+              "bytes_read": 74490,
+              "elapsed": 0.002741376,
+              "query_id": "incremental_36ec6851b2804aa0b8ab5e53066b1359",
+              "rows_read": 135,
+              "wall_seconds": 0.04753087500012043
+            },
+            "measurements": [
+              {
+                "bytes_read": 120,
+                "elapsed": 0.001225,
+                "query_id": "incremental_6340be3260eb44059db6bbec4ebdeff0",
+                "rows_read": 15,
+                "wall_seconds": 0.04628691599918966
+              },
+              {
+                "bytes_read": 74490,
+                "elapsed": 0.002741376,
+                "query_id": "incremental_36ec6851b2804aa0b8ab5e53066b1359",
+                "rows_read": 135,
+                "wall_seconds": 0.04753087500012043
+              },
+              {
+                "bytes_read": 0,
+                "elapsed": 0.000958416,
+                "query_id": "incremental_da39c15d1df84f7ab405b4e8bcba6154",
+                "rows_read": 0,
+                "wall_seconds": 0.047698958999717433
+              },
+              {
+                "bytes_read": 6046,
+                "elapsed": 0.002102,
+                "query_id": "incremental_94f5243ac4914577b40843287699972d",
+                "rows_read": 144,
+                "wall_seconds": 0.04719908300012321
+              },
+              {
+                "bytes_read": 574,
+                "elapsed": 0.001729042,
+                "query_id": "incremental_e8e14cac78b84da2845d485702bbe8d9",
+                "rows_read": 5,
+                "wall_seconds": 0.04836470800000825
+              }
+            ],
+            "verification_bucket_chunk": 128
+          },
+          "hot_lookup": {
+            "query_id": "incremental_712ac825d73c467db9d1cbe66382f2e8",
+            "wall_seconds": 0.04899754099915299,
+            "elapsed": 0.002557541,
+            "rows_read": 144,
+            "bytes_read": 79456
+          },
+          "bucket_query": {
+            "query_id": "incremental_fb30af0cb89e403ba973c501bbb3b892",
+            "wall_seconds": 0.04878700000062963,
+            "elapsed": 0.002708459,
+            "rows_read": 18,
+            "bytes_read": 2550
+          },
+          "parts": [
+            {
+              "table": "commits",
+              "parts": 16,
+              "rows": 16,
+              "bytes": 16381
+            },
+            {
+              "table": "deltas",
+              "parts": 16,
+              "rows": 18,
+              "bytes": 19089
+            },
+            {
+              "table": "plans",
+              "parts": 16,
+              "rows": 16,
+              "bytes": 24495
+            },
+            {
+              "table": "states",
+              "parts": 16,
+              "rows": 144,
+              "bytes": 21332
+            }
+          ]
+        },
+        {
+          "generation": 32,
+          "audit": {
+            "generation": 32,
+            "ids": 40,
+            "metric_rows": 1
+          },
+          "update": {
+            "changed_identities": 9,
+            "delta_rows": 1,
+            "generation": 32,
+            "input_events": 9,
+            "lookup": {
+              "bytes_read": 153946,
+              "elapsed": 0.00354025,
+              "query_id": "incremental_cd99dff629864656b20ac7a21665c15b",
+              "rows_read": 279,
+              "wall_seconds": 0.049716124999577005
+            },
+            "measurements": [
+              {
+                "bytes_read": 248,
+                "elapsed": 0.001682375,
+                "query_id": "incremental_2bbb0df951334262a74c5387e5c5ec74",
+                "rows_read": 31,
+                "wall_seconds": 0.04810412500046368
+              },
+              {
+                "bytes_read": 153946,
+                "elapsed": 0.00354025,
+                "query_id": "incremental_cd99dff629864656b20ac7a21665c15b",
+                "rows_read": 279,
+                "wall_seconds": 0.049716124999577005
+              },
+              {
+                "bytes_read": 0,
+                "elapsed": 0.001042042,
+                "query_id": "incremental_d165a867ca3b461682426ea076579a4f",
+                "rows_read": 0,
+                "wall_seconds": 0.04604174999985844
+              },
+              {
+                "bytes_read": 7198,
+                "elapsed": 0.002882042,
+                "query_id": "incremental_429dcf6c81464bddbd01bed5d7ef946d",
+                "rows_read": 288,
+                "wall_seconds": 0.04828066700065392
+              },
+              {
+                "bytes_read": 574,
+                "elapsed": 0.0020325,
+                "query_id": "incremental_35a2f7f3d6194501bb529fb517a1f469",
+                "rows_read": 5,
+                "wall_seconds": 0.048925750000307744
+              }
+            ],
+            "verification_bucket_chunk": 128
+          },
+          "hot_lookup": {
+            "query_id": "incremental_8f2812480004483ea5d161b547f4ac16",
+            "wall_seconds": 0.0484300419993815,
+            "elapsed": 0.003356834,
+            "rows_read": 288,
+            "bytes_read": 158912
+          },
+          "bucket_query": {
+            "query_id": "incremental_6e5dc10a5fb74c6595ba4fb72482973a",
+            "wall_seconds": 0.04834883300009096,
+            "elapsed": 0.003952541,
+            "rows_read": 34,
+            "bytes_read": 4982
+          },
+          "parts": [
+            {
+              "table": "commits",
+              "parts": 32,
+              "rows": 32,
+              "bytes": 32761
+            },
+            {
+              "table": "deltas",
+              "parts": 32,
+              "rows": 34,
+              "bytes": 38129
+            },
+            {
+              "table": "plans",
+              "parts": 32,
+              "rows": 32,
+              "bytes": 48920
+            },
+            {
+              "table": "states",
+              "parts": 32,
+              "rows": 288,
+              "bytes": 42622
+            }
+          ]
+        }
+      ],
+      "hot_versions_before_merge": 256,
+      "hot_versions_after_merge": 256,
+      "merged_bucket_query": {
+        "query_id": "incremental_57a53a7485594df6b76f5452fb27ac92",
+        "wall_seconds": 0.04840233300001273,
+        "elapsed": 0.001727083,
+        "rows_read": 34,
+        "bytes_read": 1606
+      },
+      "pinned_after_merge_and_restart": [
+        {
+          "generation": 1,
+          "ids": 9,
+          "metric_rows": 2
+        },
+        {
+          "generation": 2,
+          "ids": 10,
+          "metric_rows": 1
+        },
+        {
+          "generation": 8,
+          "ids": 16,
+          "metric_rows": 1
+        },
+        {
+          "generation": 16,
+          "ids": 24,
+          "metric_rows": 1
+        },
+        {
+          "generation": 32,
+          "ids": 40,
+          "metric_rows": 1
+        }
+      ],
+      "physical_parts": [
+        {
+          "table": "commits",
+          "parts": 1,
+          "rows": 32,
+          "bytes": 7417
+        },
+        {
+          "table": "deltas",
+          "parts": 1,
+          "rows": 34,
+          "bytes": 1428
+        },
+        {
+          "table": "plans",
+          "parts": 1,
+          "rows": 32,
+          "bytes": 10244
+        },
+        {
+          "table": "states",
+          "parts": 1,
+          "rows": 288,
+          "bytes": 4065
+        }
+      ],
+      "journal_bytes": {
+        "plan_bytes": 277099,
+        "commit_input_bytes": 74016
+      }
+    },
+    "many_buckets": {
+      "first_update": {
+        "changed_identities": 1024,
+        "delta_rows": 2048,
+        "generation": 1,
+        "input_events": 1024,
+        "lookup": {
+          "bytes_read": 0,
+          "elapsed": 0.003000708,
+          "query_id": "incremental_bcc82193c9d74076a818d50a2e90e7b4",
+          "rows_read": 0,
+          "wall_seconds": 0.050899375000881264
+        },
+        "measurements": [
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000734667,
+            "query_id": "incremental_ee37c01156614d6a95410020dd8ccef0",
+            "rows_read": 0,
+            "wall_seconds": 0.047761833000549814
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.003000708,
+            "query_id": "incremental_bcc82193c9d74076a818d50a2e90e7b4",
+            "rows_read": 0,
+            "wall_seconds": 0.050899375000881264
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000771084,
+            "query_id": "incremental_684d59b981da419b80a472542055af8a",
+            "rows_read": 0,
+            "wall_seconds": 0.044963083000766346
+          },
+          {
+            "bytes_read": 529460,
+            "elapsed": 0.003719749,
+            "query_id": "incremental_f44e490cfdfe4cd5b61a7825f329b6ab",
+            "rows_read": 1024,
+            "wall_seconds": 0.05469183300010627
+          },
+          {
+            "bytes_read": 44720,
+            "elapsed": 0.020376542,
+            "query_id": "incremental_7ad7cb4e6c334330990e27d6ddbb109f",
+            "rows_read": 512,
+            "wall_seconds": 0.06961379200038209
+          },
+          {
+            "bytes_read": 44720,
+            "elapsed": 0.020293958,
+            "query_id": "incremental_674355122a4048d68a38dbe5bb50d892",
+            "rows_read": 512,
+            "wall_seconds": 0.07404212500023277
+          },
+          {
+            "bytes_read": 44720,
+            "elapsed": 0.018976708,
+            "query_id": "incremental_7e31fe33856840f2adcbb165ed87484f",
+            "rows_read": 512,
+            "wall_seconds": 0.06719741699998849
+          },
+          {
+            "bytes_read": 44720,
+            "elapsed": 0.020131792,
+            "query_id": "incremental_b3e35f46915643b58750b6b9506728e8",
+            "rows_read": 512,
+            "wall_seconds": 0.0700275409999449
+          },
+          {
+            "bytes_read": 89456,
+            "elapsed": 0.019421333,
+            "query_id": "incremental_d3446850e009414e9e7e439b0d44dd7f",
+            "rows_read": 1024,
+            "wall_seconds": 0.07089620900023874
+          },
+          {
+            "bytes_read": 44784,
+            "elapsed": 0.019219749,
+            "query_id": "incremental_8f27e1dde8454a8cb1b73c9f10e8898c",
+            "rows_read": 512,
+            "wall_seconds": 0.07046012499995413
+          },
+          {
+            "bytes_read": 44784,
+            "elapsed": 0.020350417,
+            "query_id": "incremental_0a9b51f5fbb94affbb5b953059915962",
+            "rows_read": 512,
+            "wall_seconds": 0.07220112499999232
+          },
+          {
+            "bytes_read": 44784,
+            "elapsed": 0.019632709,
+            "query_id": "incremental_b4897fe63b624e68a44cc01d60cae2b3",
+            "rows_read": 512,
+            "wall_seconds": 0.07204183300018485
+          },
+          {
+            "bytes_read": 89520,
+            "elapsed": 0.019958001,
+            "query_id": "incremental_46c1a0a57a4a46c98bdc9df2b63089ce",
+            "rows_read": 1024,
+            "wall_seconds": 0.07048145799944905
+          },
+          {
+            "bytes_read": 44784,
+            "elapsed": 0.019691001,
+            "query_id": "incremental_1a1fcb856f084d1e95d9af9dc57cf06b",
+            "rows_read": 512,
+            "wall_seconds": 0.07261779200052842
+          },
+          {
+            "bytes_read": 44784,
+            "elapsed": 0.020239042,
+            "query_id": "incremental_da4f3686b5c74f4d9ffac3aa9cbece1e",
+            "rows_read": 512,
+            "wall_seconds": 0.07261154199932207
+          },
+          {
+            "bytes_read": 44784,
+            "elapsed": 0.020127083,
+            "query_id": "incremental_b65efade6e8d40de9f545ad745ad8472",
+            "rows_read": 512,
+            "wall_seconds": 0.07346216699988872
+          },
+          {
+            "bytes_read": 89200,
+            "elapsed": 0.019358083,
+            "query_id": "incremental_5463d9bbad14473182d4e426430e9882",
+            "rows_read": 1024,
+            "wall_seconds": 0.07628433400077483
+          },
+          {
+            "bytes_read": 44464,
+            "elapsed": 0.01931725,
+            "query_id": "incremental_720a8dfa09b24cb4ba397d6b35cb38d7",
+            "rows_read": 512,
+            "wall_seconds": 0.07308262500009732
+          },
+          {
+            "bytes_read": 44464,
+            "elapsed": 0.01946275,
+            "query_id": "incremental_532e5e5fb7dc41f2bc77da3a13f4e103",
+            "rows_read": 512,
+            "wall_seconds": 0.06928754199998366
+          },
+          {
+            "bytes_read": 44464,
+            "elapsed": 0.018852416,
+            "query_id": "incremental_f9d56a83a2844dc0899beec9632635bc",
+            "rows_read": 512,
+            "wall_seconds": 0.07020208300036757
+          }
+        ],
+        "verification_bucket_chunk": 128
+      },
+      "second_update": {
+        "changed_identities": 128,
+        "delta_rows": 256,
+        "generation": 2,
+        "input_events": 128,
+        "lookup": {
+          "bytes_read": 529460,
+          "elapsed": 0.001813333,
+          "query_id": "incremental_c42af81f253e446fb0bbfdac14d96201",
+          "rows_read": 1024,
+          "wall_seconds": 0.04702991599970119
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.0009135,
+            "query_id": "incremental_491bcbb9774541f29c77456ed3c23282",
+            "rows_read": 1,
+            "wall_seconds": 0.04570437500024127
+          },
+          {
+            "bytes_read": 529460,
+            "elapsed": 0.001813333,
+            "query_id": "incremental_c42af81f253e446fb0bbfdac14d96201",
+            "rows_read": 1024,
+            "wall_seconds": 0.04702991599970119
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000812417,
+            "query_id": "incremental_561addea8a7b4b5da235c6d79541c9e5",
+            "rows_read": 0,
+            "wall_seconds": 0.04490645800069615
+          },
+          {
+            "bytes_read": 74652,
+            "elapsed": 0.00166525,
+            "query_id": "incremental_4df2fcc014964f2b857564cc046e8af6",
+            "rows_read": 1152,
+            "wall_seconds": 0.04729408399998647
+          },
+          {
+            "bytes_read": 111776,
+            "elapsed": 0.020859042,
+            "query_id": "incremental_083fb6e097524e79b2c20796669a95fd",
+            "rows_read": 1280,
+            "wall_seconds": 0.06768579100025818
+          },
+          {
+            "bytes_read": 111520,
+            "elapsed": 0.020585417,
+            "query_id": "incremental_02371ac30886470ca9007e92bdad39d4",
+            "rows_read": 1280,
+            "wall_seconds": 0.06837762499981181
+          }
+        ],
+        "verification_bucket_chunk": 128
+      },
+      "published_audit": {
+        "generation": 2,
+        "ids": 1024,
+        "metric_rows": 1792
+      },
+      "narrow_query": {
+        "query_id": "incremental_cdec95b4c5d64f59b2c8d4ca7f76cf9e",
+        "wall_seconds": 0.04658087499956309,
+        "elapsed": 0.001749583,
+        "rows_read": 512,
+        "bytes_read": 44720
+      },
+      "original_metric_rows": 2048
+    },
+    "unsafe_ownership": {
+      "expected_unsafe": true,
+      "counterexample_reproduced": true,
+      "both_workers_exit_code": 0,
+      "pinned_generation": 1,
+      "pinned_metric_rows_before": 2,
+      "pinned_metric_rows_after": 4,
+      "conflicting_commit_records": {
+        "rows": 2,
+        "distinct_inputs": 2
+      },
+      "conclusion": "local locks and max(generation) do not fence independent writers"
+    },
+    "elapsed_seconds": 28.735672167000303
+  },
+  "cleanup_success": true,
+  "elapsed_seconds": 56.053981709000254,
+  "source_revision": "818f5e07af7f3033937db9be854fdcc42d7de13d",
+  "source_dirty": true,
+  "source_sha256": {
+    "experiments/incremental-analytics/prototype.py": "0f361e0e5aa7e88faf6a1dcfdd65271660ce60c1f1a274593c693289a0df1cc3",
+    "experiments/incremental-analytics/schema.sql": "d4867c375669f81e1ce39782aabe5263913c06adae08b97584925c05e223b5c5",
+    "experiments/incremental-analytics/stress.py": "bc79c253402b1b6390f95cc8b059c664bcaadb7c4365d6ae8ab66b4d87479f3d"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "success": false,
+  "recorded_at": "2026-11-10T18:29:14.715381+00:00",
+  "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+  "project": "streamforge-incremental-c1967ea427",
+  "network": "none",
+  "clickhouse_memory_bytes": 2147483648,
+  "query_memory_bytes": 67108864,
+  "scope": "serialized synthetic ClickHouse generations; no Kafka integration, retained migration or SLO claim",
+  "aws_operations": false,
+  "crash_checks": [],
+  "scales": [],
+  "docker_environment": "cpus=10 memory=8319438848",
+  "failure": "child exit 2, expected 0: Received exception from server (version 25.8.4):\nCode: 241. DB::Exception: Received from localhost:9000. DB::Exception: (total) memory limit exceeded: would use 1.87 GiB (attempt to allocate chunk of 0.00 B bytes), current RSS: 1.87 GiB, maximum: 1.80 GiB. OvercommitTracker decision: Query was selected to stop by OvercommitTracker: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED)\n(query: SELECT event_id,argMax(payload_min,generation) AS lo,argMax(payload_max,generation) AS hi FROM states WHERE generation<=12 AND event_id IN ('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008','01000000-0000-0000-0000-00000000000d') GROUP BY event_id SETTINGS max_threads=1,max_memory_usage=67108864,max_execution_time=30,max_block_size=4096,output_format_json_quote_64bit_integers=0 FORMAT JSON)\n\n",
+  "cleanup_success": true,
+  "elapsed_seconds": 18.54161437499897,
+  "source_revision": "818f5e07af7f3033937db9be854fdcc42d7de13d",
+  "source_dirty": true,
+  "source_sha256": {
+    "experiments/incremental-analytics/prototype.py": "60868b3c1be5604893dc488ea71e009daa1c91910f5e31f7e076c3f55d461af6",
+    "experiments/incremental-analytics/schema.sql": "d4867c375669f81e1ce39782aabe5263913c06adae08b97584925c05e223b5c5",
+    "experiments/incremental-analytics/stress.py": "6cf179aa3743a14857c2f7481df632c2163c1dbfce1b3fe9dab148ef03352848"
+  }
+}

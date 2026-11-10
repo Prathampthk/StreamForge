@@ -2,6 +2,8 @@
 
 This experiment tests a replacement for repeated full-history metric refreshes. It is not a production migration, approved topology change, Kafka consumer, or repair of retained readiness. No PostgreSQL hot-path ledger, serving API change, retained table/view change, AWS authentication or cloud resource is involved.
 
+The subsequent [adversarial stress stage](incremental-analytics-stress.md) demonstrates that independent writers can change a pinned generation. This is a confirmed ownership blocker, not an implemented production safety property.
+
 Run `make incremental-analytics-test`, or:
 
 ```sh
@@ -72,3 +74,5 @@ The final clean-source local run on `d192914` passed in **29.442s**, including t
 The [Linux CI experiment job](https://github.com/Prathampthk/StreamForge/actions/runs/42763251546/job/129653656467) passed on clean `d192914` in **49.877s**, with successful cleanup, on a four-CPU Docker VM reporting 16,760,348,672 bytes of memory. [Hosted evidence](evidence/incremental-analytics-ci.json) is extracted from that job's timestamped summary. It reproduced the 20,259 / 116,483 / 184,067 total worker SELECT rows at 10k / 100k / 1m seed IDs; whole-worker wall times were 0.819 / 0.813 / 0.812s. This checks Linux reproducibility of the fixture, not the application's SLOs.
 
 All eight jobs in [the complete CI run](https://github.com/Prathampthk/StreamForge/actions/runs/42763251546) passed on `d192914`, including the existing integration, RF3/shutdown, infrastructure and four image jobs. The retained-system performance gate remains unmet.
+
+Subsequent experiment invocations use a disclosed [sampling overlay and independent stress lifecycles](incremental-analytics-stress.md#memory-scope-and-measured-results). Wide internal sampling logs are disabled only inside the disposable fixture, while query/part/error logs and query statistics remain. Earlier timing evidence retains its original configuration and must not be silently compared as an equivalent performance trial.

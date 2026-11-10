@@ -1,0 +1,223 @@
+{
+  "success": false,
+  "recorded_at": "2026-11-10T06:03:09.346530+00:00",
+  "image": "clickhouse/clickhouse-server:25.8.4.13@sha256:c48c1ed0a54e6e9fde03750860aa86de1e6f40b6fe33c6df540738867b4f6809",
+  "project": "streamforge-incremental-eaaf43b0e1",
+  "network": "none",
+  "clickhouse_memory_bytes": 2147483648,
+  "query_memory_bytes": 67108864,
+  "scope": "serialized synthetic ClickHouse generations; no Kafka integration, retained migration or SLO claim",
+  "aws_operations": false,
+  "crash_checks": [
+    {
+      "boundary": "after_plan",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_states",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_deltas",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "before_commit",
+      "visible": {
+        "verified_ids": 5,
+        "conflicts": 0,
+        "metric_rows": 3,
+        "generation": 1
+      },
+      "exit_code": 86
+    },
+    {
+      "boundary": "after_commit",
+      "visible": {
+        "verified_ids": 7,
+        "conflicts": 0,
+        "metric_rows": 5,
+        "generation": 2
+      },
+      "exit_code": 86
+    }
+  ],
+  "scales": [
+    {
+      "retained_identities": 1000,
+      "source_batch_events": 384,
+      "existing_lookup_ids": 256,
+      "new_ids": 128,
+      "changed_identities": 256,
+      "exact_totals_verified": true,
+      "update_wall_seconds": 0.4746128750011849,
+      "total_update_select_rows": 2259,
+      "incremental": {
+        "changed_identities": 256,
+        "delta_rows": 2,
+        "generation": 2,
+        "input_events": 384,
+        "lookup": {
+          "bytes_read": 350000,
+          "elapsed": 0.002210458,
+          "query_id": "incremental_45df6331bc5a4babb316fcac12fa8419",
+          "rows_read": 1000,
+          "wall_seconds": 0.04623837500002992
+        },
+        "measurements": [
+          {
+            "bytes_read": 8,
+            "elapsed": 0.000838499,
+            "query_id": "incremental_6e3be874f1bb4fa482892f479a8a8939",
+            "rows_read": 1,
+            "wall_seconds": 0.04639541700089467
+          },
+          {
+            "bytes_read": 350000,
+            "elapsed": 0.002210458,
+            "query_id": "incremental_45df6331bc5a4babb316fcac12fa8419",
+            "rows_read": 1000,
+            "wall_seconds": 0.04623837500002992
+          },
+          {
+            "bytes_read": 0,
+            "elapsed": 0.000705083,
+            "query_id": "incremental_43d593c754ea4d1fb1d495f99bda49b8",
+            "rows_read": 0,
+            "wall_seconds": 0.04914900000039779
+          },
+          {
+            "bytes_read": 105152,
+            "elapsed": 0.001823666,
+            "query_id": "incremental_bff20066491c40aa96bc8bb0a060d6cb",
+            "rows_read": 1256,
+            "wall_seconds": 0.048131415998796
+          },
+          {
+            "bytes_read": 312,
+            "elapsed": 0.001663876,
+            "query_id": "incremental_c6ea556ad3cb489fb15b351dffbfb1e8",
+            "rows_read": 2,
+            "wall_seconds": 0.045947167000122136
+          }
+        ],
+        "verification_bucket_chunk": 128
+      },
+      "window_query": {
+        "query_id": "incremental_e771a06fdf3646e08b5ed7abbf22e979",
+        "wall_seconds": 0.046420208000199636,
+        "elapsed": 0.001813084,
+        "rows_read": 1,
+        "bytes_read": 156
+      },
+      "full_identity_rebuild": {
+        "success": true,
+        "measurement": {
+          "query_id": "incremental_28382223b43144a1bec2136f2e0ed969",
+          "wall_seconds": 0.04675458299971069,
+          "elapsed": 0.002041415,
+          "rows_read": 1256,
+          "bytes_read": 447152
+        }
+      }
+    }
+  ],
+  "docker_environment": "cpus=10 memory=8319438848",
+  "unpublished_restart_audit": {
+    "verified_ids": 7,
+    "conflicts": 0,
+    "metric_rows": 5,
+    "generation": 2
+  },
+  "restart_audit": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 4
+  },
+  "same_host_lock_verified": true,
+  "no_op_replay": {
+    "changed_identities": 0,
+    "delta_rows": 0,
+    "generation": 5,
+    "input_events": 3,
+    "lookup": {
+      "bytes_read": 6492,
+      "elapsed": 0.001626959,
+      "query_id": "incremental_847f2a9ced744d508e25b48c5cfff6b7",
+      "rows_read": 19,
+      "wall_seconds": 0.04549412500091421
+    },
+    "measurements": [
+      {
+        "bytes_read": 32,
+        "elapsed": 0.000917126,
+        "query_id": "incremental_298dd3b21b4f45cda69f4cfd35ce2f09",
+        "rows_read": 4,
+        "wall_seconds": 0.04662049999933515
+      },
+      {
+        "bytes_read": 6492,
+        "elapsed": 0.001626959,
+        "query_id": "incremental_847f2a9ced744d508e25b48c5cfff6b7",
+        "rows_read": 19,
+        "wall_seconds": 0.04549412500091421
+      },
+      {
+        "bytes_read": 0,
+        "elapsed": 0.001034791,
+        "query_id": "incremental_e0c19ad1f2674d6787ae6ae64f0b5331",
+        "rows_read": 0,
+        "wall_seconds": 0.04428633300085494
+      }
+    ],
+    "verification_bucket_chunk": 128
+  },
+  "correctness": {
+    "verified_ids": 12,
+    "conflicts": 5,
+    "metric_rows": 4,
+    "generation": 5
+  },
+  "negative_guards": [
+    "changed pending input",
+    "changed committed input",
+    "generation gap",
+    "same-host concurrent writer"
+  ],
+  "physical_rows": [
+    {
+      "identity_rows": 19,
+      "delta_rows": 19
+    }
+  ],
+  "int128_exact_total_verified": "18446744073709551614",
+  "failure": "Received exception from server (version 25.8.4):\nCode: 241. DB::Exception: Received from localhost:9000. DB::Exception: (total) memory limit exceeded: would use 1.80 GiB (attempt to allocate chunk of 0.00 B bytes), current RSS: 1.80 GiB, maximum: 1.80 GiB. OvercommitTracker decision: Query was selected to stop by OvercommitTracker: While executing AggregatingTransform. (MEMORY_LIMIT_EXCEEDED)\n(query: SELECT event_id,argMax(payload_min,generation) AS lo,argMax(payload_max,generation) AS hi FROM states WHERE generation<=1 AND event_id IN ('00036fcc-085e-4aac-b457-f6bda6ffeda9','004419de-1977-a0e5-1041-72c5943b1359','01d9aad0-5c2a-c78b-da27-2e87e6dc9a14','03590c4c-89b2-1032-bab2-ad89a0ffebd6','03e7416f-f189-0856-2de4-d757c8497bab','040627ea-d158-84f0-a870-e28d90745f75','041590fb-bb69-7c66-f75d-54a21d03eb54','04894d62-8713-8084-e700-af15fa921f1b','048cbea6-568f-8304-285b-d792dd1f4be3','04eaeb7b-ec27-02f8-cf16-4a1436477bc6','05cb6154-96a6-ae37-c3a0-1194103d4710','09749b66-79a8-1568-feba-7a2fa55232ff','0a264c2c-36c2-f532-f44a-d7254535b716','0b033fb7-c666-f13c-0311-30baaeee674f','0baa3ddf-550f-967c-1bae-83d625399092','10693cbd-875c-52db-4c68-2cbf0f45832f','10efa187-e819-d02c-9b2f-2fd9ccb3c8c8','11e00fbf-095e-4c63-e68b-d81c95445d5c','12209485-ac49-9dac-6d98-7bf32aa6490c','129c78f8-a35c-dbc2-5d63-643702a4ff4a','12b47835-c30d-e4cd-b982-41e75c282248','131e7364-e174-bf64-935a-fcce28bc9cc9','13c44f42-807d-08ee-4902-23c7eca00cb7','14554ca1-3508-ac29-05bd-74537179ff05','15343b7c-37a3-4740-0d52-fcf1aa260d79','154565ce-9dbf-5163-97fa-6d42d6db1dbf','1ada740d-e88c-87b7-2d10-5833a10e4416','1af2c279-dfd4-ad61-b9fa-94a3a9dff7a7','1d2f3507-4e77-d2bd-053c-76e581abfebd','1e09bbc5-a956-89fc-4fae-f53d5ee788d4','1fec5e4f-74a6-04eb-6b7a-64abbc5bb945','20a6cf1e-680f-c253-f802-fdb4ea4db62b','21ce67d6\n[remaining diagnostics omitted]",
+  "cleanup_success": true,
+  "elapsed_seconds": 20.49607108300006,
+  "source_revision": "818f5e07af7f3033937db9be854fdcc42d7de13d",
+  "source_dirty": true,
+  "source_sha256": {
+    "experiments/incremental-analytics/prototype.py": "0f361e0e5aa7e88faf6a1dcfdd65271660ce60c1f1a274593c693289a0df1cc3",
+    "experiments/incremental-analytics/schema.sql": "d4867c375669f81e1ce39782aabe5263913c06adae08b97584925c05e223b5c5",
+    "experiments/incremental-analytics/stress.py": "e31af3616e08525372eb481c8ba6b5d5c0a4e6fe19dfa33fc7a45966a0e55470"
+  }
+}

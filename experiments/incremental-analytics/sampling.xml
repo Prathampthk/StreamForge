@@ -1,0 +1,7 @@
+<clickhouse>
+    <!-- Experiment-only: wide periodic sampling logs can dominate this 2 GiB
+         microfixture. Keep query_log, part_log and server error diagnostics.
+         No serving configuration or observability pipeline is changed. -->
+    <metric_log remove="1"/>
+    <query_metric_log remove="1"/>
+</clickhouse>

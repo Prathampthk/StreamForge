@@ -121,3 +121,7 @@ process-shutdown-test:
 .PHONY: incremental-analytics-test
 incremental-analytics-test:
 	python3 experiments/incremental-analytics/prototype.py run
+
+.PHONY: incremental-analytics-stress
+incremental-analytics-stress:
+	python3 experiments/incremental-analytics/prototype.py stress
