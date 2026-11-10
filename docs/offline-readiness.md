@@ -11,7 +11,7 @@ As of November 9, 2026. AWS setup is not required for any local task below. Exis
 | Native backup/restore | Passed in 57.286s: source volumes removed; exact ClickHouse raw/identity/conflict/canonical/metric/ledger recovery, PostgreSQL metadata/owner/reader ACL recovery. Small fixture only; see the [recovery guide](backup-restore.md). |
 | Fresh 15-minute benchmark | Pending healthy analytics. Run with ingestion, concurrent queries and freshness probes; retain failures, accepted receipt audit and sleep checks. Do not bypass readiness to claim success. |
 | Consumer 1→3 scaling | Repeat after benchmark/audit, separately from steady load. Historical 1.91x fails the 2x target. |
-| Replicated Kafka failure drill | Still required: isolated three-broker RF3/minISR2 acknowledgment and broker-loss checks. Current RF1 base does not establish HA or replica-loss durability. |
+| Replicated Kafka failure drill | Passed a separate RF3/minISR2 process-failure drill: 360 acknowledged payloads recovered across 12 partitions; stricter minISR rejected unconfirmed requests. See [replicated Kafka](replicated-kafka.md). Base Compose remains RF1; no host/disk/AZ-loss guarantee. |
 | Security and deployment artifacts | Existing offline infrastructure/mock-plan, grants, pinned-image and CI checks are available. Revalidate final source and artifacts before publication. |
 
 The next engineering blocker is bounded incremental analytics on retained history, not AWS credentials. Partitioning bounds each aggregation, but repeated full-history scans and shared server memory remain a scaling limit. Query readiness must stay fail-closed while it is investigated.

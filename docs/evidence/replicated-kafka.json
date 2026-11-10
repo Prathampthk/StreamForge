@@ -1,0 +1,83 @@
+{
+  "success": true,
+  "project": "streamforge-rf3-3e64b642e0",
+  "recorded_at": "2026-11-10T04:28:45.852213+00:00",
+  "scope": "three combined broker/controller processes on one Docker VM; SIGKILL with retained disks",
+  "replication_factor": 3,
+  "normal_min_isr": 2,
+  "negative_min_isr": 3,
+  "partitions": 12,
+  "configured_max_batch_events": 200,
+  "positive_phase_events": 120,
+  "phases": {
+    "baseline": {
+      "accepted": 120,
+      "leaders": {
+        "0": 1,
+        "1": 2,
+        "10": 1,
+        "11": 2,
+        "2": 3,
+        "3": 2,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 3
+      }
+    },
+    "min_isr_rejection": {
+      "delivery_unknown": 12,
+      "status": 503
+    },
+    "one_down": {
+      "accepted": 240
+    },
+    "restored": {
+      "accepted": 360,
+      "leaders": {
+        "0": 2,
+        "1": 2,
+        "10": 2,
+        "11": 2,
+        "2": 3,
+        "3": 2,
+        "4": 3,
+        "5": 2,
+        "6": 3,
+        "7": 2,
+        "8": 3,
+        "9": 3
+      }
+    }
+  },
+  "aws_operations": false,
+  "retained_refreshes_temporarily_paused": [],
+  "test_binary_sha256": "780641e290a4ac753632b26997605ff334c863434464339b42e21c2d134c2259",
+  "initial_topic_config": "Dynamic configs for topic streamforge.events.v1 are:\n  min.insync.replicas=2 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:min.insync.replicas=2, STATIC_BROKER_CONFIG:min.insync.replicas=2, DEFAULT_CONFIG:min.insync.replicas=1}\n  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}\n  unclean.leader.election.enable=false sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:unclean.leader.election.enable=false, STATIC_BROKER_CONFIG:unclean.leader.election.enable=false, DEFAULT_CONFIG:unclean.leader.election.enable=false}",
+  "first_killed_broker": 1,
+  "negative_topic_config": "Dynamic configs for topic streamforge.events.v1 are:\n  min.insync.replicas=3 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:min.insync.replicas=3, STATIC_BROKER_CONFIG:min.insync.replicas=2, DEFAULT_CONFIG:min.insync.replicas=1}\n  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}\n  unclean.leader.election.enable=false sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:unclean.leader.election.enable=false, STATIC_BROKER_CONFIG:unclean.leader.election.enable=false, DEFAULT_CONFIG:unclean.leader.election.enable=false}",
+  "restored_topic_config": "Dynamic configs for topic streamforge.events.v1 are:\n  min.insync.replicas=2 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:min.insync.replicas=2, STATIC_BROKER_CONFIG:min.insync.replicas=2, DEFAULT_CONFIG:min.insync.replicas=1}\n  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}\n  unclean.leader.election.enable=false sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:unclean.leader.election.enable=false, STATIC_BROKER_CONFIG:unclean.leader.election.enable=false, DEFAULT_CONFIG:unclean.leader.election.enable=false}",
+  "second_killed_broker": 2,
+  "audit": {
+    "accepted": 360,
+    "duplicate_acknowledged_ids": 0,
+    "missing": 0,
+    "partitions_observed": 12,
+    "scope": "single Docker VM; broker process SIGKILL and retained-disk restart; no ClickHouse analytics or host/disk-loss guarantee",
+    "success": true,
+    "unknown_events_observed": 3,
+    "unknown_http_events": 12,
+    "verified_exact_payloads": 360
+  },
+  "elapsed_seconds": 58.163,
+  "cleanup_errors": [],
+  "source_revision": "44e6573b980b88b9c5a903d2879eeb920a9e4352",
+  "source_dirty": true,
+  "source_sha256": {
+    "/Users/prathampthk/Documents/Nerdy stuffs/Projects/StreamForge/scripts/check-replicated-kafka.py": "59959a04338669e11db53357fcfef0893641df59b80075a208df1f1f10594abc",
+    "tests/integration/replicated_kafka_test.go": "00ef95d63a63c735f2a77ba2e98d53253730a3551e1b77ab6d95ae6cca7ce170",
+    "deploy/compose.kafka-replicated.yaml": "69ed9b46a9902fd32e06b3a018f4a98c24b9c9930bb71bc2466b9edbe74e0a83"
+  }
+}

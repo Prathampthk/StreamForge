@@ -30,3 +30,8 @@ Use [replay.md](replay.md). A DLQ/audit failure retains poison and its following
 Use [benchmarking.md](benchmarking.md). Keep the Mac lid open. The wrapper's process-scoped inhibitor prevents idle sleep only. A sleep-interrupted interval cannot establish sustained throughput. Normal benchmark startup requires healthy snapshots; `--allow-unready-query` is an explicit degraded-baseline experiment that records readiness failure and every query/probe error. It cannot become a combined SLO pass.
 
 Run fault injection and scaling separately from the sustained profile. Audit every successful receipt after drain; retain unverified reads, unknown HTTP outcomes, metric mismatches and failed/censored probes in the report. A missing-at-audit ID or failed read is not evidence of permanent disk loss. Commit small summaries/graphs; keep huge private journals in ignored raw directories.
+
+
+## Replicated Kafka process failures
+
+`make replicated-kafka-test` creates a separate three-broker cluster, exercises SIGKILL/minISR changes and exact receipt reconciliation, then removes only its owned containers/volumes. See [the drill and its limits](replicated-kafka.md). It never changes the normal Kafka topic.

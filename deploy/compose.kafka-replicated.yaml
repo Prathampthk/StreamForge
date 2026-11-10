@@ -1,0 +1,75 @@
+# Disposable RF3 process-failure drill. All brokers share one host: not HA.
+x-broker: &broker
+  image: apache/kafka:4.0.2@sha256:836cafdad9f4825880d7cf1d5a21202915ae2527bd0ef1c3600c526ed7814d1f
+  mem_limit: 768m
+  healthcheck:
+    test: [CMD-SHELL, '/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:19092 --list >/dev/null 2>&1']
+    interval: 5s
+    timeout: 10s
+    retries: 30
+x-kafka-env: &kafka-env
+  KAFKA_PROCESS_ROLES: broker,controller
+  KAFKA_LISTENERS: INTERNAL://:19092,CONTROLLER://:9093
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+  KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker1:9093,2@broker2:9093,3@broker3:9093
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  KAFKA_MIN_INSYNC_REPLICAS: 2
+  KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE: "false"
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  KAFKA_LOG_DIRS: /var/lib/kafka/data
+  KAFKA_HEAP_OPTS: -Xms256m -Xmx256m
+  CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+services:
+  broker1:
+    <<: *broker
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: 1
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker1:19092
+    volumes: [broker1:/var/lib/kafka/data]
+  broker2:
+    <<: *broker
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: 2
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker2:19092
+    volumes: [broker2:/var/lib/kafka/data]
+  broker3:
+    <<: *broker
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: 3
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker3:19092
+    volumes: [broker3:/var/lib/kafka/data]
+  drill:
+    profiles: [test]
+    image: golang:1.26.10@sha256:cfa27959837144bf4649802ba38e59daffd0dd2a7994aa83daaf113285b0f551
+    working_dir: /src/tests/integration
+    environment:
+      KAFKA_BROKERS: broker1:19092,broker2:19092,broker3:19092
+      STREAMFORGE_RUN_RF3: "1"
+      RF3_RESULTS: /results
+    volumes:
+      - ..:/src:ro
+      - ${RF3_RESULTS_DIR:?set private result directory}:/results
+      - go_mod:/go/pkg/mod
+      - go_build:/root/.cache/go-build
+    command: [/results/rf3.test, -test.v, '-test.run=^TestReplicatedKafkaAcknowledgments$', -test.timeout=5m]
+    mem_limit: 1g
+networks:
+  default:
+    internal: true
+volumes:
+  broker1:
+  broker2:
+  broker3:
+  go_mod:
+    name: streamforge_go_mod
+    external: true
+  go_build:
+    name: streamforge_go_build
+    external: true

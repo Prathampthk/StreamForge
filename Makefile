@@ -109,3 +109,7 @@ workflow-check:
 .PHONY: cloud-db-check
 cloud-db-check:
 	python3 scripts/aws/check-db-grants.py
+
+.PHONY: replicated-kafka-test
+replicated-kafka-test:
+	python3 scripts/check-replicated-kafka.py
