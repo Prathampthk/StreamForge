@@ -321,9 +321,11 @@ func TestIngestSIGTERM(t *testing.T) {
 	}
 	for _, release := range []bool{true, false} {
 		t.Run(fmt.Sprintf("release_dependency_%v", release), func(t *testing.T) {
-			if err := shutdownMinimum(admin, "2", leaders); err != nil {
-				t.Fatal(err)
-			}
+			// An initial forwarded admin request can race controller discovery.
+			// Retry the idempotent setup before starting any service workload.
+			eventually(t, 12*time.Second, "ISR2 admin setup", func() bool {
+				return shutdownMinimum(admin, "2", leaders) == nil
+			})
 			verifyShutdownMinimum(t, admin, leaders, "2")
 			key := "shutdown-ingest-key-at-least-32-bytes"
 			tenant := "shutdown_fixture"
@@ -334,9 +336,9 @@ func TestIngestSIGTERM(t *testing.T) {
 				events := shutdownEvents(tenant)
 				acknowledged(shutdownPost(origin, key, events), events)
 			}
-			if err := shutdownMinimum(admin, "3", leaders); err != nil {
-				t.Fatal(err)
-			}
+			eventually(t, 12*time.Second, "ISR3 admin setup", func() bool {
+				return shutdownMinimum(admin, "3", leaders) == nil
+			})
 			verifyShutdownMinimum(t, admin, leaders, "3")
 			events := shutdownEvents(tenant)
 			pending := make(chan shutdownHTTP, 1)
