@@ -183,12 +183,23 @@ func shutdownMetadata(t *testing.T, c *kgo.Client, isr int) map[int32]bool {
 	})
 	return leaders
 }
-func shutdownMinimum(c *kgo.Client, value string) error {
+func shutdownMinimum(c *kgo.Client, value string, leaders map[int32]bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	r := kmsg.NewPtrIncrementalAlterConfigsRequest()
 	r.Resources = []kmsg.IncrementalAlterConfigsRequestResource{{ResourceType: 2, ResourceName: "streamforge.events.v1", Configs: []kmsg.IncrementalAlterConfigsRequestResourceConfig{{Name: "min.insync.replicas", Op: 0, Value: &value}}}}
-	response, err := r.RequestWith(ctx, c)
+	// Administrative requests may otherwise pick the intentionally dead seed.
+	// Partition metadata above identifies brokers currently leading live ISRs.
+	live := int32(-1)
+	for id := range leaders {
+		if live < 0 || id < live {
+			live = id
+		}
+	}
+	if live < 0 {
+		return fmt.Errorf("no confirmed live broker for ISR override")
+	}
+	response, err := r.RequestWith(ctx, c.Broker(int(live)))
 	if err != nil {
 		return err
 	}
@@ -266,7 +277,7 @@ func TestIngestSIGTERM(t *testing.T) {
 	admin := shutdownAdmin(t)
 	leaders := shutdownMetadata(t, admin, 2)
 	defer func() {
-		if err := shutdownMinimum(admin, "2"); err != nil {
+		if err := shutdownMinimum(admin, "2", leaders); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -310,7 +321,7 @@ func TestIngestSIGTERM(t *testing.T) {
 	}
 	for _, release := range []bool{true, false} {
 		t.Run(fmt.Sprintf("release_dependency_%v", release), func(t *testing.T) {
-			if err := shutdownMinimum(admin, "2"); err != nil {
+			if err := shutdownMinimum(admin, "2", leaders); err != nil {
 				t.Fatal(err)
 			}
 			verifyShutdownMinimum(t, admin, leaders, "2")
@@ -323,7 +334,7 @@ func TestIngestSIGTERM(t *testing.T) {
 				events := shutdownEvents(tenant)
 				acknowledged(shutdownPost(origin, key, events), events)
 			}
-			if err := shutdownMinimum(admin, "3"); err != nil {
+			if err := shutdownMinimum(admin, "3", leaders); err != nil {
 				t.Fatal(err)
 			}
 			verifyShutdownMinimum(t, admin, leaders, "3")
@@ -358,7 +369,7 @@ func TestIngestSIGTERM(t *testing.T) {
 			default:
 			}
 			if release {
-				if err := shutdownMinimum(admin, "2"); err != nil {
+				if err := shutdownMinimum(admin, "2", leaders); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -392,7 +403,7 @@ func TestIngestSIGTERM(t *testing.T) {
 			outcomes = append(outcomes, map[string]any{"dependency_released": release, "http_status": response.status, "exit_code": 0, "shutdown_seconds": elapsed})
 		})
 	}
-	if err := shutdownMinimum(admin, "2"); err != nil {
+	if err := shutdownMinimum(admin, "2", leaders); err != nil {
 		t.Fatal(err)
 	}
 	assignments := map[int32]kgo.Offset{}
