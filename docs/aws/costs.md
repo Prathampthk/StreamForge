@@ -1,6 +1,6 @@
 # Cloud cost review — no spend approved
 
-Default region is us-east-2, but a live account/region and price quote have not been selected. These are **illustrative planning amounts**, not a current Ohio quote or a billing cap. They use public US East example rates and 730 hours/month; verify every regional line in AWS Pricing Calculator and review the authenticated resource plan before approval. No credits/free tier/discounts are assumed.
+The user has selected account `788080238947` and region `us-east-2`, reports a Free plan with credits and a $5 monthly budget alert, and has not authorized deployment spend. Caller identity, available credits, service eligibility and a current regional quote remain unverified. These are **illustrative planning amounts**, not a current Ohio quote or a billing cap. They use public US East example rates and 730 hours/month; verify every regional line in AWS Pricing Calculator and review the authenticated resource plan before approval. No credits/free tier/discounts are assumed.
 
 | Private dev component | Planning assumption | Approximate monthly amount |
 |---|---|---:|

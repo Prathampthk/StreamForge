@@ -1,8 +1,8 @@
 # AWS development deployment — prepared offline
 
-**No AWS environment has been deployed.** The user chose offline preparation. Commands below are a reviewed procedure for later use, not executed evidence. An authenticated plan, its spend, any publication/apply and any deletion require separate approval. The current Phase 5 full-history refresh bottleneck remains unresolved; this dev topology does not establish a usable large-history analytics demo.
+**No AWS environment has been deployed.** The user has completed initial console account setup and continues offline project preparation. Commands below are a reviewed procedure for later use, not executed evidence. An authenticated plan, its spend, any publication/apply and any deletion require separate approval. The current Phase 5 full-history refresh bottleneck remains unresolved; this dev topology does not establish a usable large-history analytics demo.
 
-See [account setup and information to provide](account-setup.md) for initial authentication.
+See [account setup status](account-setup.md): account/region are user-reported, IAM console login works, CLI authentication is absent and Identity Center is explicitly deferred to preserve the Free plan. Do not create Organizations, enable Identity Center, change IAM permissions or upgrade the plan without explicit approval. The $5 budget alert does not authorize this topology. The proposed browser-login route and Terraform credential compatibility need separate review before using any procedure below.
 
 ## Topology and prerequisites
 
@@ -10,7 +10,7 @@ Commercial AWS, default `us-east-2`; one availability zone hosts ECS tasks, Kafk
 
 Two x86_64 hosts: t3.medium for Kafka+PostgreSQL, r6i.large for ClickHouse. Choose a reviewed AMI containing Docker, AWS CLI v2, Python3, xfs tools and current SSM Agent (an appropriately reviewed ECS-optimized AL2023 image is a candidate). Bootstrap fails if prerequisites are missing; it has no Internet package-install fallback. Each host has an encrypted 20GiB root disk and retained, encrypted 100GiB gp3 data disk. Kafka T3 credits use `standard` to avoid unlimited-credit billing; exhausted credits can reduce throughput. This is single-node, non-HA dev infrastructure. Optional RDS is not created.
 
-Use Terraform 1.17.1, AWS provider 6.72.0, AWS CLI v2, Session Manager plugin and an authenticated named profile. The ordinary `scripts/terraform.sh` deliberately mounts **no AWS credentials**. Account ID, region, AZs, AMI, existing GitHub OIDC provider (if any), domain/certificate and image digests must be selected before a live plan. Never paste secret keys into chat or Git.
+Use Terraform 1.17.1, AWS provider 6.72.0, AWS CLI v2, Session Manager plugin and an authenticated named profile. The ordinary `scripts/terraform.sh` deliberately mounts **no AWS credentials**. The user has selected account `788080238947` and region `us-east-2`; caller identity is not verified. AZs, AMI, existing GitHub OIDC provider (if any), domain/certificate and image digests still need review before a live plan. Never paste secret keys into chat or Git.
 
 ## Review stages
 

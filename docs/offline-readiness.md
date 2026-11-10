@@ -17,7 +17,7 @@ As of November 9, 2026. AWS setup is not required for any local task below. Exis
 
 The next engineering blocker is bounded incremental analytics on retained history, not AWS credentials. Partitioning bounds each aggregation, but repeated full-history scans and shared server memory remain a scaling limit. Query readiness must stay fail-closed while it is investigated.
 
-AWS-dependent work comes later: account/profile and region, live permissions/network validation, current regional cost review, artifact publication and a separately authorized deployment. No account provisioning, authenticated AWS action, image publication or spend has occurred. Follow [account setup](aws/account-setup.md) in parallel; never commit access keys or database secrets.
+The user reports AWS account `788080238947`, Ohio (`us-east-2`), MFA-protected IAM user `streamforge-dev` with `ReadOnlyAccess`, CLI v2.39.7 and a verified $5 monthly budget alert. The Free plan is to be preserved. Console login is verified by the user; CLI authentication and caller identity remain unverified. Organizations and Identity Center SSO are explicitly deferred; no access keys, credential collection, authenticated AWS action or cloud provisioning are authorized. See [account status and proposed authentication](aws/account-setup.md). Missing SSO blocks its own setup flow; an approved alternative could support future CLI access. Live planning, provider compatibility, account-specific validation, cost/eligibility review and separately approved publication/deployment remain pending. All local work below is independent of AWS.
 
 ## Remaining local completion order
 
