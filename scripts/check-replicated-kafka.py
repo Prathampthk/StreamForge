@@ -38,7 +38,14 @@ def main():
     cleanup = []
 
     def run(command, **kwargs):
-        return subprocess.run(command, env=env, check=True, capture_output=True, timeout=kwargs.pop('timeout', 60), **kwargs)
+        try:
+            return subprocess.run(command, env=env, check=True, capture_output=True, timeout=kwargs.pop('timeout', 60), **kwargs)
+        except subprocess.CalledProcessError as error:
+            # The pinned builder has no credentials; surface compiler diagnostics
+            # without dumping resolved Compose configuration or environment.
+            if command[0] == './scripts/go.sh':
+                print(error.stderr.decode(errors='replace')[-8000:], flush=True)
+            raise
 
     def sql(statement):
         command = ['./scripts/compose.sh', 'exec', '-T', 'clickhouse', 'sh', '-c',
@@ -108,7 +115,7 @@ def main():
              '/src/'+str(directory/'rf3.test'), './tests/integration'], timeout=300)
         if a.with_process_shutdown:
             for service in ['ingest-api', 'consumer', 'query-api']:
-                run(['./scripts/go.sh', 'go', 'build', '-race', '-o', '/src/'+str(directory/service), './cmd/'+service], timeout=300)
+                run(['./scripts/go.sh', 'go', 'build', '-buildvcs=false', '-race', '-o', '/src/'+str(directory/service), './cmd/'+service], timeout=300)
         result['test_binary_sha256'] = hashlib.sha256((directory/'rf3.test').read_bytes()).hexdigest()
         run(compose+['up', '-d', '--wait', '--wait-timeout', '240', 'broker1', 'broker2', 'broker3'], timeout=270)
         kafka(1, 'kafka-topics', '--create', '--topic', 'streamforge.events.v1', '--partitions', '12',
